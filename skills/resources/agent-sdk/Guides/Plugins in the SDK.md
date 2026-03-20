@@ -14,9 +14,7 @@ Plugins are packages of Claude Code extensions that can include:
 - **Hooks**: Event handlers that respond to tool use and other events
 - **MCP servers**: External tool integrations via Model Context Protocol
 
-<Note>
-The `commands/` directory is a legacy format. Use `skills/` for new plugins. Claude Code continues to support both formats for backward compatibility.
-</Note>
+> **Nota:** The `commands/` directory is a legacy format. Use `skills/` for new plugins. Claude Code continues to support both formats for backward compatibility.
 
 For complete information on plugin structure and how to create plugins, see [Plugins](https://code.claude.com/docs/en/plugins).
 
@@ -24,9 +22,8 @@ For complete information on plugin structure and how to create plugins, see [Plu
 
 Load plugins by providing their local file system paths in your options configuration. The SDK supports loading multiple plugins from different locations.
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -42,7 +39,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -64,25 +62,20 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ### Path specifications
 
 Plugin paths can be:
 - **Relative paths**: Resolved relative to your current working directory (for example, `"./plugins/my-plugin"`)
 - **Absolute paths**: Full file system paths (for example, `"/home/user/plugins/my-plugin"`)
 
-<Note>
-The path should point to the plugin's root directory (the directory containing `.claude-plugin/plugin.json`).
-</Note>
+> **Nota:** The path should point to the plugin's root directory (the directory containing `.claude-plugin/plugin.json`).
 
 ## Verifying plugin installation
 
 When plugins load successfully, they appear in the system initialization message. You can verify that your plugins are available:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -103,7 +96,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -125,15 +119,12 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ## Using plugin skills
 
 Skills from plugins are automatically namespaced with the plugin name to avoid conflicts. When invoked as slash commands, the format is `plugin-name:skill-name`.
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Load a plugin with a custom /greet skill
@@ -150,7 +141,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query, AssistantMessage, TextBlock
 
@@ -171,19 +163,14 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
-<Note>
-If you installed a plugin via the CLI (for example, `/plugin install my-plugin@marketplace`), you can still use it in the SDK by providing its installation path. Check `~/.claude/plugins/` for CLI-installed plugins.
-</Note>
+> **Nota:** If you installed a plugin via the CLI (for example, `/plugin install my-plugin@marketplace`), you can still use it in the SDK by providing its installation path. Check `~/.claude/plugins/` for CLI-installed plugins.
 
 ## Complete example
 
 Here's a full example demonstrating plugin loading and usage:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import * as path from "path";
 
@@ -213,7 +200,8 @@ async function runWithPlugin() {
 runWithPlugin().catch(console.error);
 ```
 
-```python Python
+**Python**
+```python
 #!/usr/bin/env python3
 """Example demonstrating how to use plugins with the Agent SDK."""
 
@@ -254,8 +242,6 @@ async def run_with_plugin():
 if __name__ == "__main__":
     anyio.run(run_with_plugin)
 ```
-
-</CodeGroup>
 
 ## Plugin structure reference
 

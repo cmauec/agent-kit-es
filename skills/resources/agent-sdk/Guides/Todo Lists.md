@@ -26,9 +26,8 @@ The SDK automatically creates todos for:
 
 ### Monitoring Todo Changes
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -53,7 +52,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 from claude_agent_sdk import query, AssistantMessage, ToolUseBlock
 
 async for message in query(
@@ -78,13 +78,10 @@ async for message in query(
                     print(f"{i + 1}. {status} {todo['content']}")
 ```
 
-</CodeGroup>
-
 ### Real-time Progress Display
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 class TodoTracker {
@@ -130,7 +127,8 @@ const tracker = new TodoTracker();
 await tracker.trackQuery("Build a complete authentication system with todos");
 ```
 
-```python Python
+**Python**
+```python
 from claude_agent_sdk import query, AssistantMessage, ToolUseBlock
 from typing import List, Dict
 
@@ -178,8 +176,6 @@ class TodoTracker:
 tracker = TodoTracker()
 await tracker.track_query("Build a complete authentication system with todos")
 ```
-
-</CodeGroup>
 
 ## Related Documentation
 

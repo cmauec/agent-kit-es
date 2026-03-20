@@ -50,8 +50,8 @@ Subagents can be limited to specific tools, reducing the risk of unintended acti
 
 Define subagents directly in your code using the `agents` parameter. This example creates two subagents: a code reviewer with read-only access and a test runner that can execute commands. The `Agent` tool must be included in `allowedTools` since Claude invokes subagents through the Agent tool.
 
-<CodeGroup>
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions, AgentDefinition
 
@@ -103,7 +103,8 @@ Focus on:
 asyncio.run(main())
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -150,7 +151,6 @@ Focus on:
   if ("result" in message) console.log(message.result);
 }
 ```
-</CodeGroup>
 
 ### AgentDefinition configuration
 
@@ -161,17 +161,13 @@ Focus on:
 | `tools` | `string[]` | No | Array of allowed tool names. If omitted, inherits all tools |
 | `model` | `'sonnet' \| 'opus' \| 'haiku' \| 'inherit'` | No | Model override for this agent. Defaults to main model if omitted |
 
-<Note>
-Subagents cannot spawn their own subagents. Don't include `Agent` in a subagent's `tools` array.
-</Note>
+> **Nota:** Subagents cannot spawn their own subagents. Don't include `Agent` in a subagent's `tools` array.
 
 ### Filesystem-based definition (alternative)
 
 You can also define subagents as markdown files in `.claude/agents/` directories. See the [Claude Code subagents documentation](https://code.claude.com/docs/en/sub-agents) for details on this approach. Programmatically defined agents take precedence over filesystem-based agents with the same name.
 
-<Note>
-Even without defining custom subagents, Claude can spawn the built-in `general-purpose` subagent when `Agent` is in your `allowedTools`. This is useful for delegating research or exploration tasks without creating specialized agents.
-</Note>
+> **Nota:** Even without defining custom subagents, Claude can spawn the built-in `general-purpose` subagent when `Agent` is in your `allowedTools`. This is useful for delegating research or exploration tasks without creating specialized agents.
 
 ## What subagents inherit
 
@@ -183,9 +179,7 @@ A subagent's context window starts fresh (no parent conversation) but isn't empt
 | Project CLAUDE.md (loaded via `settingSources`) | Skills (unless listed in `AgentDefinition.skills`, TypeScript only) |
 | Tool definitions (inherited from parent, or the subset in `tools`) | The parent's system prompt |
 
-<Note>
-The parent receives the subagent's final message verbatim as the Agent tool result, but may summarize it in its own response. To preserve subagent output verbatim in the user-facing response, include an instruction to do so in the prompt or `systemPrompt` option you pass to the **main** `query()` call.
-</Note>
+> **Nota:** The parent receives the subagent's final message verbatim as the Agent tool result, but may summarize it in its own response. To preserve subagent output verbatim in the user-facing response, include an instruction to do so in the prompt or `systemPrompt` option you pass to the **main** `query()` call.
 
 ## Invoking subagents
 
@@ -209,8 +203,8 @@ This bypasses automatic matching and directly invokes the named subagent.
 
 You can create agent definitions dynamically based on runtime conditions. This example creates a security reviewer with different strictness levels, using a more powerful model for strict reviews.
 
-<CodeGroup>
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions, AgentDefinition
 
@@ -248,7 +242,8 @@ async def main():
 asyncio.run(main())
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query, type AgentDefinition } from "@anthropic-ai/claude-agent-sdk";
 
 // Factory function that returns an AgentDefinition
@@ -279,24 +274,19 @@ for await (const message of query({
   if ("result" in message) console.log(message.result);
 }
 ```
-</CodeGroup>
 
 ## Detecting subagent invocation
 
 Subagents are invoked via the Agent tool. To detect when a subagent is invoked, check for `tool_use` blocks where `name` is `"Agent"`. Messages from within a subagent's context include a `parent_tool_use_id` field.
 
-<Note>
-The tool name was renamed from `"Task"` to `"Agent"` in Claude Code v2.1.63. Current SDK releases emit `"Agent"` in `tool_use` blocks but still use `"Task"` in the `system:init` tools list and in `result.permission_denials[].tool_name`. Checking both values in `block.name` ensures compatibility across SDK versions.
-</Note>
+> **Nota:** The tool name was renamed from `"Task"` to `"Agent"` in Claude Code v2.1.63. Current SDK releases emit `"Agent"` in `tool_use` blocks but still use `"Task"` in the `system:init` tools list and in `result.permission_denials[].tool_name`. Checking both values in `block.name` ensures compatibility across SDK versions.
 
 This example iterates through streamed messages, logging when a subagent is invoked and when subsequent messages originate from within that subagent's execution context.
 
-<Note>
-The message structure differs between SDKs. In Python, content blocks are accessed directly via `message.content`. In TypeScript, `SDKAssistantMessage` wraps the Claude API message, so content is accessed via `message.message.content`.
-</Note>
+> **Nota:** The message structure differs between SDKs. In Python, content blocks are accessed directly via `message.content`. In TypeScript, `SDKAssistantMessage` wraps the Claude API message, so content is accessed via `message.message.content`.
 
-<CodeGroup>
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions, AgentDefinition
 
@@ -336,7 +326,8 @@ async def main():
 asyncio.run(main())
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -372,7 +363,6 @@ for await (const message of query({
   }
 }
 ```
-</CodeGroup>
 
 ## Resuming subagents
 
@@ -384,16 +374,14 @@ When a subagent completes, Claude receives its agent ID in the Agent tool result
 2. **Extract the agent ID**: Parse `agentId` from the message content
 3. **Resume the session**: Pass `resume: sessionId` in the second query's options, and include the agent ID in your prompt
 
-<Note>
-You must resume the same session to access the subagent's transcript. Each `query()` call starts a new session by default, so pass `resume: sessionId` to continue in the same session.
-
-If you're using a custom agent (not a built-in one), you also need to pass the same agent definition in the `agents` parameter for both queries.
-</Note>
+> **Nota:** You must resume the same session to access the subagent's transcript. Each `query()` call starts a new session by default, so pass `resume: sessionId` to continue in the same session.
+>
+> If you're using a custom agent (not a built-in one), you also need to pass the same agent definition in the `agents` parameter for both queries.
 
 The example below demonstrates this flow: the first query runs a subagent and captures the session ID and agent ID, then the second query resumes the session to ask a follow-up question that requires context from the first analysis.
 
-<CodeGroup>
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query, type SDKMessage } from "@anthropic-ai/claude-agent-sdk";
 
 // Helper to extract agentId from message content
@@ -434,7 +422,8 @@ if (agentId && sessionId) {
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 import json
 import re
@@ -484,7 +473,6 @@ async def main():
 
 asyncio.run(main())
 ```
-</CodeGroup>
 
 Subagent transcripts persist independently of the main conversation:
 
@@ -501,8 +489,8 @@ Subagents can have restricted tool access via the `tools` field:
 
 This example creates a read-only analysis agent that can examine code but cannot modify files or run commands.
 
-<CodeGroup>
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions, AgentDefinition
 
@@ -530,7 +518,8 @@ identify patterns, and suggest improvements without making changes.""",
 asyncio.run(main())
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -551,7 +540,6 @@ identify patterns, and suggest improvements without making changes.`,
   if ("result" in message) console.log(message.result);
 }
 ```
-</CodeGroup>
 
 ### Common tool combinations
 

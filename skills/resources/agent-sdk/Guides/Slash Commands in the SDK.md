@@ -10,9 +10,8 @@ Slash commands provide a way to control Claude Code sessions with special comman
 
 The Claude Agent SDK provides information about available slash commands in the system initialization message. Access this information when your session starts:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -26,7 +25,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -41,15 +41,12 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ## Sending Slash Commands
 
 Send slash commands by including them in your prompt string, just like regular text:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Send a slash command
@@ -63,7 +60,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -78,17 +76,14 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ## Common Slash Commands
 
 ### `/compact` - Compact Conversation History
 
 The `/compact` command reduces the size of your conversation history by summarizing older messages while preserving important context:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -103,7 +98,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -119,15 +115,12 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ### `/clear` - Clear Conversation
 
 The `/clear` command starts a fresh conversation by clearing all previous history:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Clear conversation and start fresh
@@ -142,7 +135,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -158,15 +152,11 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ## Creating Custom Slash Commands
 
 In addition to using built-in slash commands, you can create your own custom commands that are available through the SDK. Custom commands are defined as markdown files in specific directories, similar to how subagents are configured.
 
-<Note>
-The `.claude/commands/` directory is the legacy format. The recommended format is `.claude/skills/<name>/SKILL.md`, which supports the same slash-command invocation (`/name`) plus autonomous invocation by Claude. See [Skills](/docs/en/agent-sdk/skills) for the current format. The CLI continues to support both formats, and the examples below remain accurate for `.claude/commands/`.
-</Note>
+> **Nota:** The `.claude/commands/` directory is the legacy format. The recommended format is `.claude/skills/<name>/SKILL.md`, which supports the same slash-command invocation (`/name`) plus autonomous invocation by Claude. See [Skills](/docs/en/agent-sdk/skills) for the current format. The CLI continues to support both formats, and the examples below remain accurate for `.claude/commands/`.
 
 ### File Locations
 
@@ -215,9 +205,8 @@ Analyze the codebase for security vulnerabilities including:
 
 Once defined in the filesystem, custom commands are automatically available through the SDK:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Use a custom command
@@ -243,7 +232,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -267,8 +257,6 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ### Advanced Features
 
 #### Arguments and Placeholders
@@ -289,9 +277,8 @@ Check the issue description and implement the necessary changes.
 
 Use in SDK:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Pass arguments to custom command
@@ -306,7 +293,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -321,8 +309,6 @@ async def main():
 
 asyncio.run(main())
 ```
-
-</CodeGroup>
 
 #### Bash Command Execution
 
@@ -433,9 +419,8 @@ Run tests matching pattern: $ARGUMENTS
 
 Use these commands through the SDK:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Run code review
@@ -455,7 +440,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query
 
@@ -474,8 +460,6 @@ async def main():
 
 asyncio.run(main())
 ```
-
-</CodeGroup>
 
 ## See Also
 

@@ -27,14 +27,13 @@ The following diagram shows the message stream from a single `query()` call, wit
 
 ![Diagram showing a query producing two steps of messages. Step 1 has four assistant messages sharing the same ID and usage (count once), Step 2 has one assistant message with a new ID, and the final result message shows total_cost_usd for billing.](/docs/images/agent-sdk/message-usage-flow.svg)
 
-<Steps>
-  <Step title="Each step produces assistant messages">
-    When Claude responds, it sends one or more assistant messages. In TypeScript, each assistant message contains a nested `BetaMessage` (accessed via `message.message`) with an `id` and a [`usage`](/docs/en/api/messages) object with token counts (`input_tokens`, `output_tokens`). When Claude uses multiple tools in one turn, all messages in that turn share the same `id`, so deduplicate by ID to avoid double-counting. In Python, per-step usage is not available on individual messages.
-  </Step>
-  <Step title="The result message provides the authoritative total">
-    When the `query()` call completes, the SDK emits a result message with `total_cost_usd` and cumulative `usage`. This is available in both TypeScript ([`SDKResultMessage`](/docs/en/agent-sdk/typescript#sdk-result-message)) and Python ([`ResultMessage`](/docs/en/agent-sdk/python#result-message)). If you make multiple `query()` calls (for example, in a multi-turn session), each result only reflects the cost of that individual call. If you only need the total cost, you can ignore the per-step usage and read this single value.
-  </Step>
-</Steps>
+### 1. Each step produces assistant messages
+
+When Claude responds, it sends one or more assistant messages. In TypeScript, each assistant message contains a nested `BetaMessage` (accessed via `message.message`) with an `id` and a [`usage`](/docs/en/api/messages) object with token counts (`input_tokens`, `output_tokens`). When Claude uses multiple tools in one turn, all messages in that turn share the same `id`, so deduplicate by ID to avoid double-counting. In Python, per-step usage is not available on individual messages.
+
+### 2. The result message provides the authoritative total
+
+When the `query()` call completes, the SDK emits a result message with `total_cost_usd` and cumulative `usage`. This is available in both TypeScript ([`SDKResultMessage`](/docs/en/agent-sdk/typescript#sdk-result-message)) and Python ([`ResultMessage`](/docs/en/agent-sdk/python#result-message)). If you make multiple `query()` calls (for example, in a multi-turn session), each result only reflects the cost of that individual call. If you only need the total cost, you can ignore the per-step usage and read this single value.
 
 ## Get the total cost of a query
 
@@ -42,9 +41,8 @@ The result message ([TypeScript](/docs/en/agent-sdk/typescript#sdk-result-messag
 
 The following examples iterate over the message stream from a `query()` call and print the total cost when the `result` message arrives:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({ prompt: "Summarize this project" })) {
@@ -54,7 +52,8 @@ for await (const message of query({ prompt: "Summarize this project" })) {
 }
 ```
 
-```python Python
+**Python**
+```python
 from claude_agent_sdk import query, ResultMessage
 import asyncio
 
@@ -68,8 +67,6 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ## Track detailed usage in TypeScript
 
 The TypeScript SDK exposes additional usage granularity that is not available in Python. The Python SDK's `AssistantMessage` does not expose per-step token usage or per-model breakdowns. Use [`ResultMessage.usage`](/docs/en/agent-sdk/python#result-message) for cumulative totals instead.
@@ -78,9 +75,7 @@ The TypeScript SDK exposes additional usage granularity that is not available in
 
 Each assistant message contains a nested `BetaMessage` (accessed via `message.message`) with an `id` and `usage` object with token counts. When Claude uses tools in parallel, multiple messages share the same `id` with identical usage data. Track which IDs you've already counted and skip duplicates to avoid inflated totals.
 
-<Warning>
-Parallel tool calls produce multiple assistant messages whose nested `BetaMessage` shares the same `id` and identical usage. Always deduplicate by ID to get accurate per-step token counts.
-</Warning>
+> **Advertencia:** Parallel tool calls produce multiple assistant messages whose nested `BetaMessage` shares the same `id` and identical usage. Always deduplicate by ID to get accurate per-step token counts.
 
 The following example accumulates input and output tokens across all steps, counting each unique message ID only once:
 
@@ -137,9 +132,8 @@ Each `query()` call returns its own `total_cost_usd`. The SDK does not provide a
 
 The following examples run two `query()` calls sequentially, add each call's `total_cost_usd` to a running total, and print both the per-call and combined cost:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Track cumulative cost across multiple query() calls
@@ -162,7 +156,8 @@ for (const prompt of prompts) {
 console.log(`Total spend: $${totalSpend.toFixed(4)}`);
 ```
 
-```python Python
+**Python**
+```python
 from claude_agent_sdk import query, ResultMessage
 import asyncio
 
@@ -188,8 +183,6 @@ async def main():
 
 asyncio.run(main())
 ```
-
-</CodeGroup>
 
 ## Handle errors, caching, and token discrepancies
 

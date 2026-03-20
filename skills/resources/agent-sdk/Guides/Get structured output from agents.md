@@ -14,7 +14,7 @@ Agents return free-form text by default, which works for chat but not when you n
 
 Consider a recipe app where an agent searches the web and brings back recipes. Without structured outputs, you get free-form text that you'd need to parse yourself. With structured outputs, you define the shape you want and get typed data you can use directly in your app.
 
-<section title="Without structured outputs">
+**Without structured outputs:**
 
 ```text
 Here's a classic chocolate chip cookie recipe!
@@ -30,8 +30,7 @@ Ingredients:
 
 To use this in your app, you'd need to parse out the title, convert "15 minutes" to a number, separate ingredients from instructions, and handle inconsistent formatting across responses.
 
-</section>
-<section title="With structured outputs">
+**With structured outputs:**
 
 ```json
 {
@@ -41,15 +40,12 @@ To use this in your app, you'd need to parse out the title, convert "15 minutes"
   "ingredients": [
     { "item": "all-purpose flour", "amount": 2.25, "unit": "cups" },
     { "item": "butter, softened", "amount": 1, "unit": "cup" }
-    // ...
   ],
-  "steps": ["Preheat oven to 375°F", "Cream butter and sugar" /* ... */]
+  "steps": ["Preheat oven to 375°F", "Cream butter and sugar"]
 }
 ```
 
 Typed data you can use directly in your UI.
-
-</section>
 
 ## Quick start
 
@@ -57,9 +53,8 @@ To use structured outputs, define a [JSON Schema](https://json-schema.org/unders
 
 The example below asks the agent to research Anthropic and return the company name, year founded, and headquarters as structured output.
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Define the shape of data you want back
@@ -90,7 +85,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
@@ -122,17 +118,14 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ## Type-safe schemas with Zod and Pydantic
 
 Instead of writing JSON Schema by hand, you can use [Zod](https://zod.dev/) (TypeScript) or [Pydantic](https://docs.pydantic.dev/latest/) (Python) to define your schema. These libraries generate the JSON Schema for you and let you parse the response into a fully-typed object you can use throughout your codebase with autocomplete and type checking.
 
 The example below defines a schema for a feature implementation plan with a summary, list of steps (each with complexity level), and potential risks. The agent plans the feature and returns a typed `FeaturePlan` object. You can then access properties like `plan.summary` and iterate over `plan.steps` with full type safety.
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { z } from "zod";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
@@ -181,7 +174,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from pydantic import BaseModel
 from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
@@ -224,8 +218,6 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 **Benefits:**
 - Full type inference (TypeScript) and type hints (Python)
 - Runtime validation with `safeParse()` or `model_validate()`
@@ -247,9 +239,8 @@ This example demonstrates how structured outputs work with multi-step tool use. 
 
 The schema includes optional fields (`author` and `date`) since git blame information might not be available for all files. The agent fills in what it can find and omits the rest.
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Define structure for TODO extraction
@@ -298,7 +289,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
@@ -346,8 +338,6 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ## Error handling
 
 Structured output generation can fail when the agent cannot produce valid JSON matching your schema. This typically happens when the schema is too complex for the task, the task itself is ambiguous, or the agent hits its retry limit trying to fix validation errors.
@@ -361,9 +351,8 @@ When an error occurs, the result message has a `subtype` indicating what went wr
 
 The example below checks the `subtype` field to determine whether the output was generated successfully or if you need to handle a failure:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 for await (const msg of query({
   prompt: "Extract contact info from the document",
   options: {
@@ -385,7 +374,8 @@ for await (const msg of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 async for message in query(
     prompt="Extract contact info from the document",
     options=ClaudeAgentOptions(
@@ -400,8 +390,6 @@ async for message in query(
             # Handle the failure
             print("Could not produce valid output")
 ```
-
-</CodeGroup>
 
 **Tips for avoiding errors:**
 

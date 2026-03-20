@@ -22,9 +22,7 @@ When using the Claude Agent SDK, Skills are:
 
 Unlike subagents (which can be defined programmatically), Skills must be created as filesystem artifacts. The SDK does not provide a programmatic API for registering Skills.
 
-<Note>
-**Default behavior**: By default, the SDK does not load any filesystem settings. To use Skills, you must explicitly configure `settingSources: ['user', 'project']` (TypeScript) or `setting_sources=["user", "project"]` (Python) in your options.
-</Note>
+> **Nota:** **Default behavior**: By default, the SDK does not load any filesystem settings. To use Skills, you must explicitly configure `settingSources: ['user', 'project']` (TypeScript) or `setting_sources=["user", "project"]` (Python) in your options.
 
 ## Using Skills with the SDK
 
@@ -35,9 +33,8 @@ To use Skills with the SDK, you need to:
 
 Once configured, Claude automatically discovers Skills from the specified directories and invokes them when relevant to the user's request.
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 import asyncio
 from claude_agent_sdk import query, ClaudeAgentOptions
 
@@ -58,7 +55,8 @@ async def main():
 asyncio.run(main())
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -72,8 +70,6 @@ for await (const message of query({
   console.log(message);
 }
 ```
-
-</CodeGroup>
 
 ## Skill Locations
 
@@ -99,21 +95,16 @@ For complete guidance on creating Skills, including SKILL.md structure, multi-fi
 
 ## Tool Restrictions
 
-<Note>
-The `allowed-tools` frontmatter field in SKILL.md is only supported when using Claude Code CLI directly. **It does not apply when using Skills through the SDK**.
-
-When using the SDK, control tool access through the main `allowedTools` option in your query configuration.
-</Note>
+> **Nota:** The `allowed-tools` frontmatter field in SKILL.md is only supported when using Claude Code CLI directly. **It does not apply when using Skills through the SDK**.
+>
+> When using the SDK, control tool access through the main `allowedTools` option in your query configuration.
 
 To control tool access for Skills in SDK applications, use `allowedTools` to pre-approve specific tools. Without a `canUseTool` callback, anything not in the list is denied:
 
-<Note>
-Import statements from the first example are assumed in the following code snippets.
-</Note>
+> **Nota:** Import statements from the first example are assumed in the following code snippets.
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 options = ClaudeAgentOptions(
     setting_sources=["user", "project"],  # Load Skills from filesystem
     allowed_tools=["Skill", "Read", "Grep", "Glob"],
@@ -123,7 +114,8 @@ async for message in query(prompt="Analyze the codebase structure", options=opti
     print(message)
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 for await (const message of query({
   prompt: "Analyze the codebase structure",
   options: {
@@ -136,15 +128,12 @@ for await (const message of query({
 }
 ```
 
-</CodeGroup>
-
 ## Discovering Available Skills
 
 To see which Skills are available in your SDK application, simply ask Claude:
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 options = ClaudeAgentOptions(
     setting_sources=["user", "project"],  # Load Skills from filesystem
     allowed_tools=["Skill"],
@@ -154,7 +143,8 @@ async for message in query(prompt="What Skills are available?", options=options)
     print(message)
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 for await (const message of query({
   prompt: "What Skills are available?",
   options: {
@@ -166,17 +156,14 @@ for await (const message of query({
 }
 ```
 
-</CodeGroup>
-
 Claude will list the available Skills based on your current working directory and installed plugins.
 
 ## Testing Skills
 
 Test Skills by asking questions that match their descriptions:
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 options = ClaudeAgentOptions(
     cwd="/path/to/project",
     setting_sources=["user", "project"],  # Load Skills from filesystem
@@ -187,7 +174,8 @@ async for message in query(prompt="Extract text from invoice.pdf", options=optio
     print(message)
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 for await (const message of query({
   prompt: "Extract text from invoice.pdf",
   options: {
@@ -200,8 +188,6 @@ for await (const message of query({
 }
 ```
 
-</CodeGroup>
-
 Claude automatically invokes the relevant Skill if the description matches your request.
 
 ## Troubleshooting
@@ -210,9 +196,8 @@ Claude automatically invokes the relevant Skill if the description matches your 
 
 **Check settingSources configuration**: Skills are only loaded when you explicitly configure `settingSources`/`setting_sources`. This is the most common issue:
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 # Wrong - Skills won't be loaded
 options = ClaudeAgentOptions(allowed_tools=["Skill"])
 
@@ -223,7 +208,8 @@ options = ClaudeAgentOptions(
 )
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 // Wrong - Skills won't be loaded
 const options = {
   allowedTools: ["Skill"]
@@ -236,15 +222,12 @@ const options = {
 };
 ```
 
-</CodeGroup>
-
 For more details on `settingSources`/`setting_sources`, see the [TypeScript SDK reference](/docs/en/agent-sdk/typescript#setting-source) or [Python SDK reference](/docs/en/agent-sdk/python#setting-source).
 
 **Check working directory**: The SDK loads Skills relative to the `cwd` option. Ensure it points to a directory containing `.claude/skills/`:
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 # Ensure your cwd points to the directory containing .claude/skills/
 options = ClaudeAgentOptions(
     cwd="/path/to/project",  # Must contain .claude/skills/
@@ -253,7 +236,8 @@ options = ClaudeAgentOptions(
 )
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 // Ensure your cwd points to the directory containing .claude/skills/
 const options = {
   cwd: "/path/to/project", // Must contain .claude/skills/
@@ -261,8 +245,6 @@ const options = {
   allowedTools: ["Skill"]
 };
 ```
-
-</CodeGroup>
 
 See the "Using Skills with the SDK" section above for the complete pattern.
 

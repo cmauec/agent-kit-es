@@ -16,9 +16,8 @@ The setting sources option ([`setting_sources`](/docs/en/agent-sdk/python#claude
 
 This example loads both user-level and project-level settings by setting `settingSources` to `["user", "project"]`:
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage
 
 async for message in query(
@@ -39,7 +38,8 @@ async for message in query(
         print(f"\nResult: {message.result}")
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 for await (const message of query({
@@ -63,8 +63,6 @@ for await (const message of query({
 }
 ```
 
-</CodeGroup>
-
 Each source loads settings from a specific location, where `<cwd>` is the working directory you pass via the `cwd` option (or the process's current directory if unset). For the full type definition, see [`SettingSource`](/docs/en/agent-sdk/typescript#setting-source) (TypeScript) or [`SettingSource`](/docs/en/agent-sdk/python#setting-source) (Python).
 
 | Source | What it loads | Location |
@@ -75,9 +73,7 @@ Each source loads settings from a specific location, where `<cwd>` is the workin
 
 To match the full Claude Code CLI behavior, use `["user", "project", "local"]`.
 
-<Warning>
-The `cwd` option determines where the SDK looks for project settings. If neither `cwd` nor any of its parent directories contains a `.claude/` folder, project-level features won't load. Auto memory (the `~/.claude/projects//memory/` directory that Claude Code uses to persist notes across interactive sessions) is a CLI-only feature and is never loaded by the SDK.
-</Warning>
+> **Advertencia:** The `cwd` option determines where the SDK looks for project settings. If neither `cwd` nor any of its parent directories contains a `.claude/` folder, project-level features won't load. Auto memory (the `~/.claude/projects//memory/` directory that Claude Code uses to persist notes across interactive sessions) is a CLI-only feature and is never loaded by the SDK.
 
 ## Project instructions (CLAUDE.md and rules)
 
@@ -97,9 +93,7 @@ The `cwd` option determines where the SDK looks for project settings. If neither
 
 All levels are additive: if both project and user CLAUDE.md files exist, the agent sees both. There is no hard precedence rule between levels; if instructions conflict, the outcome depends on how Claude interprets them. Write non-conflicting rules, or state precedence explicitly in the more specific file ("These project instructions override any conflicting user-level defaults").
 
-<Tip>
-You can also inject context directly via `systemPrompt` without using CLAUDE.md files. See [Modify system prompts](/docs/en/agent-sdk/modifying-system-prompts). Use CLAUDE.md when you want the same context shared between interactive Claude Code sessions and your SDK agents.
-</Tip>
+> **Tip:** You can also inject context directly via `systemPrompt` without using CLAUDE.md files. See [Modify system prompts](/docs/en/agent-sdk/modifying-system-prompts). Use CLAUDE.md when you want the same context shared between interactive Claude Code sessions and your SDK agents.
 
 For how to structure and organize CLAUDE.md content, see [Manage Claude's memory](https://code.claude.com/docs/en/memory).
 
@@ -109,9 +103,8 @@ Skills are markdown files that give your agent specialized knowledge and invocab
 
 To use skills in the SDK, set `settingSources` so the agent discovers skill files from the filesystem. The `Skill` tool is enabled by default when you don't specify `allowedTools`. If you are using an `allowedTools` allowlist, include `"Skill"` explicitly.
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
 # Skills in .claude/skills/ are discovered automatically
@@ -127,7 +120,8 @@ async for message in query(
         print(message.result)
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Skills in .claude/skills/ are discovered automatically
@@ -145,11 +139,7 @@ for await (const message of query({
 }
 ```
 
-</CodeGroup>
-
-<Note>
-Skills must be created as filesystem artifacts (`.claude/skills/<name>/SKILL.md`). The SDK does not have a programmatic API for registering skills. See [Agent Skills in the SDK](/docs/en/agent-sdk/skills) for full details.
-</Note>
+> **Nota:** Skills must be created as filesystem artifacts (`.claude/skills/<name>/SKILL.md`). The SDK does not have a programmatic API for registering skills. See [Agent Skills in the SDK](/docs/en/agent-sdk/skills) for full details.
 
 For more on creating and using skills, see [Agent Skills in the SDK](/docs/en/agent-sdk/skills).
 
@@ -164,9 +154,8 @@ Both types execute during the same hook lifecycle. If you already have hooks in 
 
 Hook callbacks receive the tool input and return a decision dict. Returning `{}` (an empty dict) means allow the tool to proceed. Returning `{"decision": "block", "reason": "..."}` prevents execution and the reason is sent to Claude as the tool result. See the [hooks guide](/docs/en/agent-sdk/hooks) for the full callback signature and return types.
 
-<CodeGroup>
-
-```python Python
+**Python**
+```python
 from claude_agent_sdk import query, ClaudeAgentOptions, HookMatcher, ResultMessage
 
 
@@ -198,7 +187,8 @@ async for message in query(
         print(message.result)
 ```
 
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query, type HookInput, type HookJSONOutput } from "@anthropic-ai/claude-agent-sdk";
 
 // PreToolUse hook callback. HookInput is a discriminated union on
@@ -230,8 +220,6 @@ for await (const message of query({
 }
 ```
 
-</CodeGroup>
-
 ### When to use which hook type
 
 | Hook type | Best for |
@@ -239,9 +227,7 @@ for await (const message of query({
 | **Filesystem** (`settings.json`) | Sharing hooks between CLI and SDK sessions. Supports `"command"` (shell scripts), `"http"` (POST to an endpoint), `"prompt"` (LLM evaluates a prompt), and `"agent"` (spawns a verifier agent). These fire in the main agent and any subagents it spawns. |
 | **Programmatic** (callbacks in `query()`) | Application-specific logic; returning structured decisions; in-process integration. Scoped to the main session only. |
 
-<Note>
-The TypeScript SDK supports additional hook events beyond Python, including `SessionStart`, `SessionEnd`, `TeammateIdle`, and `TaskCompleted`. See the [hooks guide](/docs/en/agent-sdk/hooks) for the full event compatibility table.
-</Note>
+> **Nota:** The TypeScript SDK supports additional hook events beyond Python, including `SessionStart`, `SessionEnd`, `TeammateIdle`, and `TaskCompleted`. See the [hooks guide](/docs/en/agent-sdk/hooks) for the full event compatibility table.
 
 For full details on programmatic hooks, see [Control execution with hooks](/docs/en/agent-sdk/hooks). For filesystem hook syntax, see [Hooks](https://code.claude.com/docs/en/hooks).
 
@@ -259,9 +245,7 @@ The Agent SDK gives you access to several ways to extend your agent's behavior. 
 | Run deterministic logic on tool calls (audit, block, transform) | [Hooks](/docs/en/agent-sdk/hooks) | `hooks` parameter with callbacks, or shell scripts loaded via `settingSources` |
 | Give Claude structured tool access to an external service | [MCP](/docs/en/agent-sdk/mcp) | `mcpServers` parameter |
 
-<Tip>
-**Subagents versus agent teams:** Subagents are ephemeral and isolated: fresh conversation, one task, summary returned to parent. Agent teams coordinate multiple independent Claude Code instances that share a task list and message each other directly. Agent teams are a CLI feature. See [What subagents inherit](/docs/en/agent-sdk/subagents#what-subagents-inherit) and the [agent teams comparison](https://code.claude.com/docs/en/agent-teams#compare-with-subagents) for details.
-</Tip>
+> **Tip:** **Subagents versus agent teams:** Subagents are ephemeral and isolated: fresh conversation, one task, summary returned to parent. Agent teams coordinate multiple independent Claude Code instances that share a task list and message each other directly. Agent teams are a CLI feature. See [What subagents inherit](/docs/en/agent-sdk/subagents#what-subagents-inherit) and the [agent teams comparison](https://code.claude.com/docs/en/agent-teams#compare-with-subagents) for details.
 
 Every feature you enable adds to your agent's context window. For per-feature costs and how these features layer together, see [Extend Claude Code](https://code.claude.com/docs/en/features-overview#understand-context-costs).
 

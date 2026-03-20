@@ -6,31 +6,31 @@ Control how your agent uses tools with permission modes, hooks, and declarative 
 
 The Claude Agent SDK provides permission controls to manage how Claude uses tools. Use permission modes and rules to define what's allowed automatically, and the [`canUseTool` callback](/docs/en/agent-sdk/user-input) to handle everything else at runtime.
 
-<Note>
-This page covers permission modes and rules. To build interactive approval flows where users approve or deny tool requests at runtime, see [Handle approvals and user input](/docs/en/agent-sdk/user-input).
-</Note>
+> **Nota:** This page covers permission modes and rules. To build interactive approval flows where users approve or deny tool requests at runtime, see [Handle approvals and user input](/docs/en/agent-sdk/user-input).
 
 ## How permissions are evaluated
 
 When Claude requests a tool, the SDK checks permissions in this order:
 
-<Steps>
-  <Step title="Hooks">
-    Run [hooks](/docs/en/agent-sdk/hooks) first, which can allow, deny, or continue to the next step
-  </Step>
-  <Step title="Deny rules">
-    Check `deny` rules (from `disallowed_tools` and [settings.json](https://code.claude.com/docs/en/settings#permission-settings)). If a deny rule matches, the tool is blocked, even in `bypassPermissions` mode.
-  </Step>
-  <Step title="Permission mode">
-    Apply the active [permission mode](#permission-modes). `bypassPermissions` approves everything that reaches this step. `acceptEdits` approves file operations. Other modes fall through.
-  </Step>
-  <Step title="Allow rules">
-    Check `allow` rules (from `allowed_tools` and settings.json). If a rule matches, the tool is approved.
-  </Step>
-  <Step title="canUseTool callback">
-    If not resolved by any of the above, call your [`canUseTool` callback](/docs/en/agent-sdk/user-input) for a decision. In `dontAsk` mode, this step is skipped and the tool is denied.
-  </Step>
-</Steps>
+### 1. Hooks
+
+Run [hooks](/docs/en/agent-sdk/hooks) first, which can allow, deny, or continue to the next step
+
+### 2. Deny rules
+
+Check `deny` rules (from `disallowed_tools` and [settings.json](https://code.claude.com/docs/en/settings#permission-settings)). If a deny rule matches, the tool is blocked, even in `bypassPermissions` mode.
+
+### 3. Permission mode
+
+Apply the active [permission mode](#permission-modes). `bypassPermissions` approves everything that reaches this step. `acceptEdits` approves file operations. Other modes fall through.
+
+### 4. Allow rules
+
+Check `allow` rules (from `allowed_tools` and settings.json). If a rule matches, the tool is approved.
+
+### 5. canUseTool callback
+
+If not resolved by any of the above, call your [`canUseTool` callback](/docs/en/agent-sdk/user-input) for a decision. In `dontAsk` mode, this step is skipped and the tool is denied.
 
 ![Permission evaluation flow diagram](/docs/images/agent-sdk/permissions-flow.svg)
 
@@ -59,9 +59,7 @@ const options = {
 
 In Python, `dontAsk` is not yet available as a permission mode. Without it, Claude may still attempt to call tools not in `allowed_tools`. The call is rejected at runtime, but Claude wastes a turn discovering this. For tighter control in Python, use `disallowed_tools` to explicitly block tools you don't want Claude to attempt.
 
-<Warning>
-**`allowed_tools` does not constrain `bypassPermissions`.** `allowed_tools` only pre-approves the tools you list. Unlisted tools are not matched by any allow rule and fall through to the permission mode, where `bypassPermissions` approves them. Setting `allowed_tools=["Read"]` alongside `permission_mode="bypassPermissions"` still approves every tool, including `Bash`, `Write`, and `Edit`. If you need `bypassPermissions` but want specific tools blocked, use `disallowed_tools`.
-</Warning>
+> **Advertencia:** **`allowed_tools` does not constrain `bypassPermissions`.** `allowed_tools` only pre-approves the tools you list. Unlisted tools are not matched by any allow rule and fall through to the permission mode, where `bypassPermissions` approves them. Setting `allowed_tools=["Read"]` alongside `permission_mode="bypassPermissions"` still approves every tool, including `Bash`, `Write`, and `Edit`. If you need `bypassPermissions` but want specific tools blocked, use `disallowed_tools`.
 
 You can also configure allow, deny, and ask rules declaratively in `.claude/settings.json`. The SDK does not load filesystem settings by default, so you must set `setting_sources=["project"]` (TypeScript: `settingSources: ["project"]`) in your options for these rules to apply. See [Permission settings](https://code.claude.com/docs/en/settings#permission-settings) for the rule syntax.
 
@@ -81,118 +79,111 @@ The SDK supports these permission modes:
 | `bypassPermissions` | Bypass all permission checks | All tools run without permission prompts (use with caution) |
 | `plan` | Planning mode | No tool execution; Claude plans without making changes |
 
-<Warning>
-**Subagent inheritance:** When using `bypassPermissions`, all subagents inherit this mode and it cannot be overridden. Subagents may have different system prompts and less constrained behavior than your main agent. Enabling `bypassPermissions` grants them full, autonomous system access without any approval prompts.
-</Warning>
+> **Advertencia:** **Subagent inheritance:** When using `bypassPermissions`, all subagents inherit this mode and it cannot be overridden. Subagents may have different system prompts and less constrained behavior than your main agent. Enabling `bypassPermissions` grants them full, autonomous system access without any approval prompts.
 
 ### Set permission mode
 
 You can set the permission mode once when starting a query, or change it dynamically while the session is active.
 
-<Tabs>
-  <Tab title="At query time">
-    Pass `permission_mode` (Python) or `permissionMode` (TypeScript) when creating a query. This mode applies for the entire session unless changed dynamically.
+#### At query time
 
-    <CodeGroup>
+Pass `permission_mode` (Python) or `permissionMode` (TypeScript) when creating a query. This mode applies for the entire session unless changed dynamically.
 
-    ```python Python
-    import asyncio
-    from claude_agent_sdk import query, ClaudeAgentOptions
-
-
-    async def main():
-        async for message in query(
-            prompt="Help me refactor this code",
-            options=ClaudeAgentOptions(
-                permission_mode="default",  # Set the mode here
-            ),
-        ):
-            if hasattr(message, "result"):
-                print(message.result)
+**Python**
+```python
+import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions
 
 
-    asyncio.run(main())
-    ```
+async def main():
+    async for message in query(
+        prompt="Help me refactor this code",
+        options=ClaudeAgentOptions(
+            permission_mode="default",  # Set the mode here
+        ),
+    ):
+        if hasattr(message, "result"):
+            print(message.result)
 
-    ```typescript TypeScript
-    import { query } from "@anthropic-ai/claude-agent-sdk";
 
-    async function main() {
-      for await (const message of query({
-        prompt: "Help me refactor this code",
-        options: {
-          permissionMode: "default" // Set the mode here
-        }
-      })) {
-        if ("result" in message) {
-          console.log(message.result);
-        }
-      }
+asyncio.run(main())
+```
+
+**TypeScript**
+```typescript
+import { query } from "@anthropic-ai/claude-agent-sdk";
+
+async function main() {
+  for await (const message of query({
+    prompt: "Help me refactor this code",
+    options: {
+      permissionMode: "default" // Set the mode here
     }
-
-    main();
-    ```
-
-    </CodeGroup>
-  </Tab>
-  <Tab title="During streaming">
-    Call `set_permission_mode()` (Python) or `setPermissionMode()` (TypeScript) to change the mode mid-session. The new mode takes effect immediately for all subsequent tool requests. This lets you start restrictive and loosen permissions as trust builds, for example switching to `acceptEdits` after reviewing Claude's initial approach.
-
-    <CodeGroup>
-
-    ```python Python
-    import asyncio
-    from claude_agent_sdk import query, ClaudeAgentOptions
-
-
-    async def main():
-        q = query(
-            prompt="Help me refactor this code",
-            options=ClaudeAgentOptions(
-                permission_mode="default",  # Start in default mode
-            ),
-        )
-
-        # Change mode dynamically mid-session
-        await q.set_permission_mode("acceptEdits")
-
-        # Process messages with the new permission mode
-        async for message in q:
-            if hasattr(message, "result"):
-                print(message.result)
-
-
-    asyncio.run(main())
-    ```
-
-    ```typescript TypeScript
-    import { query } from "@anthropic-ai/claude-agent-sdk";
-
-    async function main() {
-      const q = query({
-        prompt: "Help me refactor this code",
-        options: {
-          permissionMode: "default" // Start in default mode
-        }
-      });
-
-      // Change mode dynamically mid-session
-      await q.setPermissionMode("acceptEdits");
-
-      // Process messages with the new permission mode
-      for await (const message of q) {
-        if ("result" in message) {
-          console.log(message.result);
-        }
-      }
+  })) {
+    if ("result" in message) {
+      console.log(message.result);
     }
+  }
+}
 
-    main();
-    ```
+main();
+```
 
-    </CodeGroup>
-  </Tab>
-</Tabs>
+#### During streaming
+
+Call `set_permission_mode()` (Python) or `setPermissionMode()` (TypeScript) to change the mode mid-session. The new mode takes effect immediately for all subsequent tool requests. This lets you start restrictive and loosen permissions as trust builds, for example switching to `acceptEdits` after reviewing Claude's initial approach.
+
+**Python**
+```python
+import asyncio
+from claude_agent_sdk import query, ClaudeAgentOptions
+
+
+async def main():
+    q = query(
+        prompt="Help me refactor this code",
+        options=ClaudeAgentOptions(
+            permission_mode="default",  # Start in default mode
+        ),
+    )
+
+    # Change mode dynamically mid-session
+    await q.set_permission_mode("acceptEdits")
+
+    # Process messages with the new permission mode
+    async for message in q:
+        if hasattr(message, "result"):
+            print(message.result)
+
+
+asyncio.run(main())
+```
+
+**TypeScript**
+```typescript
+import { query } from "@anthropic-ai/claude-agent-sdk";
+
+async function main() {
+  const q = query({
+    prompt: "Help me refactor this code",
+    options: {
+      permissionMode: "default" // Start in default mode
+    }
+  });
+
+  // Change mode dynamically mid-session
+  await q.setPermissionMode("acceptEdits");
+
+  // Process messages with the new permission mode
+  for await (const message of q) {
+    if ("result" in message) {
+      console.log(message.result);
+    }
+  }
+}
+
+main();
+```
 
 ### Mode details
 
@@ -212,19 +203,15 @@ Converts any permission prompt into a denial. Tools pre-approved by `allowed_too
 
 **Use when:** you want a fixed, explicit tool surface for a headless agent and prefer a hard deny over silent reliance on `canUseTool` being absent.
 
-<Note>
-`dontAsk` is available in the TypeScript SDK only. In Python, there is no exact equivalent. Use `disallowed_tools` to explicitly block tools you don't want Claude to use.
-</Note>
+> **Nota:** `dontAsk` is available in the TypeScript SDK only. In Python, there is no exact equivalent. Use `disallowed_tools` to explicitly block tools you don't want Claude to use.
 
 #### Bypass permissions mode (`bypassPermissions`)
 
 Auto-approves all tool uses without prompts. Hooks still execute and can block operations if needed.
 
-<Warning>
-Use with extreme caution. Claude has full system access in this mode. Only use in controlled environments where you trust all possible operations.
-
-`allowed_tools` does not constrain this mode. Every tool is approved, not just the ones you listed. Deny rules (`disallowed_tools`), explicit `ask` rules, and hooks are evaluated before the mode check and can still block a tool.
-</Warning>
+> **Advertencia:** Use with extreme caution. Claude has full system access in this mode. Only use in controlled environments where you trust all possible operations.
+>
+> `allowed_tools` does not constrain this mode. Every tool is approved, not just the ones you listed. Deny rules (`disallowed_tools`), explicit `ask` rules, and hooks are evaluated before the mode check and can still block a tool.
 
 #### Plan mode (`plan`)
 

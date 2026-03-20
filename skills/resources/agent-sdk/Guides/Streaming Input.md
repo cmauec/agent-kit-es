@@ -59,32 +59,17 @@ sequenceDiagram
 
 ### Benefits
 
-<CardGroup cols={2}>
-  <Card title="Image Uploads" icon="image">
-    Attach images directly to messages for visual analysis and understanding
-  </Card>
-  <Card title="Queued Messages" icon="stack">
-    Send multiple messages that process sequentially, with ability to interrupt
-  </Card>
-  <Card title="Tool Integration" icon="wrench">
-    Full access to all tools and custom MCP servers during the session
-  </Card>
-  <Card title="Hooks Support" icon="link">
-    Use lifecycle hooks to customize behavior at various points
-  </Card>
-  <Card title="Real-time Feedback" icon="lightning">
-    See responses as they're generated, not just final results
-  </Card>
-  <Card title="Context Persistence" icon="database">
-    Maintain conversation context across multiple turns naturally
-  </Card>
-</CardGroup>
+- **Image Uploads** — Attach images directly to messages for visual analysis and understanding
+- **Queued Messages** — Send multiple messages that process sequentially, with ability to interrupt
+- **Tool Integration** — Full access to all tools and custom MCP servers during the session
+- **Hooks Support** — Use lifecycle hooks to customize behavior at various points
+- **Real-time Feedback** — See responses as they're generated, not just final results
+- **Context Persistence** — Maintain conversation context across multiple turns naturally
 
 ### Implementation Example
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { readFile } from "fs/promises";
 
@@ -138,7 +123,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 from claude_agent_sdk import (
     ClaudeSDKClient,
     ClaudeAgentOptions,
@@ -203,8 +189,6 @@ async def streaming_analysis():
 asyncio.run(streaming_analysis())
 ```
 
-</CodeGroup>
-
 ## Single Message Input
 
 Single message input is simpler but more limited.
@@ -219,20 +203,17 @@ Use single message input when:
 
 ### Limitations
 
-<Warning>
-Single message input mode does **not** support:
-- Direct image attachments in messages
-- Dynamic message queueing
-- Real-time interruption
-- Hook integration
-- Natural multi-turn conversations
-</Warning>
+> **Advertencia:** Single message input mode does **not** support:
+> - Direct image attachments in messages
+> - Dynamic message queueing
+> - Real-time interruption
+> - Hook integration
+> - Natural multi-turn conversations
 
 ### Implementation Example
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Simple one-shot query
@@ -262,7 +243,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 import asyncio
 
@@ -287,5 +269,3 @@ async def single_message_example():
 
 asyncio.run(single_message_example())
 ```
-
-</CodeGroup>

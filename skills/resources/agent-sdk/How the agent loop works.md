@@ -66,9 +66,7 @@ How you check message types depends on the SDK:
 - **Python:** check message types with `isinstance()` against classes imported from `claude_agent_sdk` (for example, `isinstance(message, ResultMessage)`).
 - **TypeScript:** check the `type` string field (for example, `message.type === "result"`). `AssistantMessage` and `UserMessage` wrap the raw API message in a `.message` field, so content blocks are at `message.message.content`, not `message.content`.
 
-<section title="Example: Check message types and handle results">
-
-<CodeGroup>
+**Python**
 
 ```python Python
 from claude_agent_sdk import query, AssistantMessage, ResultMessage
@@ -82,6 +80,8 @@ async for message in query(prompt="Summarize this project"):
         else:
             print(f"Stopped: {message.subtype}")
 ```
+
+**TypeScript**
 
 ```typescript TypeScript
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -99,10 +99,6 @@ for await (const message of query({ prompt: "Summarize this project" })) {
   }
 }
 ```
-
-</CodeGroup>
-
-</section>
 
 ## Tool execution
 
@@ -171,9 +167,7 @@ The `effort` option controls how much reasoning Claude applies. Lower effort lev
 
 If you don't set `effort`, the Python SDK leaves the parameter unset and defers to the model's default behavior. The TypeScript SDK defaults to `"high"`.
 
-<Note>
-`effort` trades latency and token cost for reasoning depth within each response. [Extended thinking](/docs/en/build-with-claude/extended-thinking) is a separate feature that produces visible chain-of-thought blocks in the output. They are independent: you can set `effort: "low"` with extended thinking enabled, or `effort: "max"` without it.
-</Note>
+> **Nota:** `effort` trades latency and token cost for reasoning depth within each response. [Extended thinking](/docs/en/build-with-claude/extended-thinking) is a separate feature that produces visible chain-of-thought blocks in the output. They are independent: you can set `effort: "low"` with extended thinking enabled, or `effort: "max"` without it.
 
 Use lower effort for agents doing simple, well-scoped tasks (like listing files or running a single grep) to reduce cost and latency. `effort` is set at the top-level `query()` options, not per-subagent.
 
@@ -225,8 +219,6 @@ You can customize compaction behavior in several ways:
 - **`PreCompact` hook:** Run custom logic before compaction occurs, for example to archive the full transcript. The hook receives a `trigger` field (`manual` or `auto`). See [hooks](/docs/en/agent-sdk/hooks).
 - **Manual compaction:** Send `/compact` as a prompt string to trigger compaction on demand. (Slash commands sent this way are SDK inputs, not CLI-only shortcuts. See [slash commands in the SDK](/docs/en/agent-sdk/slash-commands).)
 
-<section title="Example: Summarization instructions in CLAUDE.md">
-
 Add a section to your project's CLAUDE.md telling the compactor what to preserve. The header name isn't special; use any clear label.
 
 ```markdown CLAUDE.md
@@ -238,8 +230,6 @@ When summarizing this conversation, always preserve:
 - Test results and error messages
 - Decisions made and the reasoning behind them
 ```
-
-</section>
 
 ### Keep context efficient
 
@@ -260,9 +250,7 @@ When you resume, the full context from previous turns is restored: files that we
 
 See [Session management](/docs/en/agent-sdk/sessions) for the full guide on resume, continue, and fork patterns.
 
-<Note>
-In Python, `ClaudeSDKClient` handles session IDs automatically across multiple calls. See the [Python SDK reference](/docs/en/agent-sdk/python#choosing-between-query-and-claude-sdk-client) for details.
-</Note>
+> **Nota:** In Python, `ClaudeSDKClient` handles session IDs automatically across multiple calls. See the [Python SDK reference](/docs/en/agent-sdk/python#choosing-between-query-and-claude-sdk-client) for details.
 
 ## Handle the result
 
@@ -301,7 +289,7 @@ Both SDKs support all the events above. The TypeScript SDK includes additional e
 
 This example combines the key concepts from this page into a single agent that fixes failing tests. It configures the agent with allowed tools (auto-approved so the agent runs autonomously), project settings, and safety limits on turns and reasoning effort. As the loop runs, it captures the session ID for potential resumption, handles the final result, and prints the total cost.
 
-<CodeGroup>
+**Python**
 
 ```python Python
 import asyncio
@@ -348,6 +336,8 @@ async def run_agent():
 asyncio.run(run_agent())
 ```
 
+**TypeScript**
+
 ```typescript TypeScript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
@@ -383,8 +373,6 @@ for await (const message of query({
   }
 }
 ```
-
-</CodeGroup>
 
 ## Next steps
 

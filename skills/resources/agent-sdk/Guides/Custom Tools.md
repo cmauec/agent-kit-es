@@ -10,9 +10,8 @@ Custom tools allow you to extend Claude Code's capabilities with your own functi
 
 Use the `createSdkMcpServer` and `tool` helper functions to define type-safe custom tools:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 
@@ -48,7 +47,8 @@ const customServer = createSdkMcpServer({
 });
 ```
 
-```python Python
+**Python**
+```python
 from claude_agent_sdk import (
     tool,
     create_sdk_mcp_server,
@@ -91,15 +91,11 @@ custom_server = create_sdk_mcp_server(
 )
 ```
 
-</CodeGroup>
-
 ## Using Custom Tools
 
 Pass the custom server to the `query` function via the `mcpServers` option as a dictionary/object.
 
-<Note>
-**Important:** Custom MCP tools require streaming input mode. You must use an async generator/iterable for the `prompt` parameter - a simple string will not work with MCP servers.
-</Note>
+> **Nota:** **Important:** Custom MCP tools require streaming input mode. You must use an async generator/iterable for the `prompt` parameter - a simple string will not work with MCP servers.
 
 ### Tool Name Format
 
@@ -111,9 +107,8 @@ When MCP tools are exposed to Claude, their names follow a specific format:
 
 You can control which tools Claude can use via the `allowedTools` option:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
 
 // Use the custom tools in your query with streaming input
@@ -147,7 +142,8 @@ for await (const message of query({
 }
 ```
 
-```python Python
+**Python**
+```python
 from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions
 import asyncio
 
@@ -173,15 +169,12 @@ async def main():
 asyncio.run(main())
 ```
 
-</CodeGroup>
-
 ### Multiple Tools Example
 
 When your MCP server has multiple tools, you can selectively allow them:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 const multiToolServer = createSdkMcpServer({
   name: "utilities",
   version: "1.0.0",
@@ -312,15 +305,12 @@ async for message in query(
         print(message.result)
 ```
 
-</CodeGroup>
-
 ## Type Safety with Python
 
 The `@tool` decorator supports various schema definition approaches for type safety:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 import { z } from "zod";
 
 tool(
@@ -354,7 +344,8 @@ tool(
 );
 ```
 
-```python Python
+**Python**
+```python
 from typing import Any
 
 
@@ -407,15 +398,12 @@ async def advanced_process(args: dict[str, Any]) -> dict[str, Any]:
     }
 ```
 
-</CodeGroup>
-
 ## Error Handling
 
 Handle errors gracefully to provide meaningful feedback:
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 tool(
   "fetch_data",
   "Fetch data from an API",
@@ -495,15 +483,12 @@ async def fetch_data(args: dict[str, Any]) -> dict[str, Any]:
         }
 ```
 
-</CodeGroup>
-
 ## Example Tools
 
 ### Database Query Tool
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 const databaseServer = createSdkMcpServer({
   name: "database-tools",
   version: "1.0.0",
@@ -531,7 +516,8 @@ const databaseServer = createSdkMcpServer({
 });
 ```
 
-```python Python
+**Python**
+```python
 from typing import Any
 import json
 
@@ -560,13 +546,10 @@ database_server = create_sdk_mcp_server(
 )
 ```
 
-</CodeGroup>
-
 ### API Gateway Tool
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 const apiGatewayServer = createSdkMcpServer({
   name: "api-gateway",
   version: "1.0.0",
@@ -617,7 +600,8 @@ const apiGatewayServer = createSdkMcpServer({
 });
 ```
 
-```python Python
+**Python**
+```python
 import os
 import json
 import aiohttp
@@ -690,13 +674,10 @@ api_gateway_server = create_sdk_mcp_server(
 )
 ```
 
-</CodeGroup>
-
 ### Calculator Tool
 
-<CodeGroup>
-
-```typescript TypeScript
+**TypeScript**
+```typescript
 const calculatorServer = createSdkMcpServer({
   name: "calculator",
   version: "1.0.0",
@@ -769,7 +750,8 @@ const calculatorServer = createSdkMcpServer({
 });
 ```
 
-```python Python
+**Python**
+```python
 import math
 from typing import Any
 
@@ -835,8 +817,6 @@ calculator_server = create_sdk_mcp_server(
     tools=[calculate, compound_interest],  # Pass decorated functions
 )
 ```
-
-</CodeGroup>
 
 ## Related Documentation
 
