@@ -1,20 +1,20 @@
-# Get structured output from agents
+# Obtener salidas estructuradas de agentes
 
-Return validated JSON from agent workflows using JSON Schema, Zod, or Pydantic. Get type-safe, structured data after multi-turn tool use.
+Devuelve JSON validado desde flujos de trabajo de agentes usando JSON Schema, Zod o Pydantic. Obtén datos estructurados con seguridad de tipos después de un uso de herramientas en múltiples turnos.
 
 ---
 
-Structured outputs let you define the exact shape of data you want back from an agent. The agent can use any tools it needs to complete the task, and you still get validated JSON matching your schema at the end. Define a [JSON Schema](https://json-schema.org/understanding-json-schema/about) for the structure you need, and the SDK guarantees the output matches it.
+Las salidas estructuradas te permiten definir la forma exacta de los datos que quieres recibir de un agente. El agente puede usar cualquier herramienta que necesite para completar la tarea, y aún así obtienes JSON validado que coincide con tu schema al final. Define un [JSON Schema](https://json-schema.org/understanding-json-schema/about) para la estructura que necesitas, y el SDK garantiza que la salida coincida con él.
 
-For full type safety, use [Zod](#type-safe-schemas-with-zod-and-pydantic) (TypeScript) or [Pydantic](#type-safe-schemas-with-zod-and-pydantic) (Python) to define your schema and get strongly-typed objects back.
+Para seguridad de tipos completa, usa [Zod](#type-safe-schemas-with-zod-and-pydantic) (TypeScript) o [Pydantic](#type-safe-schemas-with-zod-and-pydantic) (Python) para definir tu schema y obtener objetos fuertemente tipados de vuelta.
 
-## Why structured outputs?
+## ¿Por qué salidas estructuradas?
 
-Agents return free-form text by default, which works for chat but not when you need to use the output programmatically. Structured outputs give you typed data you can pass directly to your application logic, database, or UI components.
+Los agentes devuelven texto libre por defecto, lo cual funciona para el chat pero no cuando necesitas usar la salida de forma programática. Las salidas estructuradas te proporcionan datos tipados que puedes pasar directamente a la lógica de tu aplicación, base de datos o componentes de UI.
 
-Consider a recipe app where an agent searches the web and brings back recipes. Without structured outputs, you get free-form text that you'd need to parse yourself. With structured outputs, you define the shape you want and get typed data you can use directly in your app.
+Considera una aplicación de recetas donde un agente busca en la web y trae recetas. Sin salidas estructuradas, obtienes texto libre que tendrías que parsear por tu cuenta. Con salidas estructuradas, defines la forma que quieres y obtienes datos tipados que puedes usar directamente en tu aplicación.
 
-**Without structured outputs:**
+**Sin salidas estructuradas:**
 
 ```text
 Here's a classic chocolate chip cookie recipe!
@@ -28,9 +28,9 @@ Ingredients:
 ...
 ```
 
-To use this in your app, you'd need to parse out the title, convert "15 minutes" to a number, separate ingredients from instructions, and handle inconsistent formatting across responses.
+Para usar esto en tu aplicación, necesitarías parsear el título, convertir "15 minutes" a un número, separar los ingredientes de las instrucciones, y manejar formatos inconsistentes entre respuestas.
 
-**With structured outputs:**
+**Con salidas estructuradas:**
 
 ```json
 {
@@ -45,13 +45,13 @@ To use this in your app, you'd need to parse out the title, convert "15 minutes"
 }
 ```
 
-Typed data you can use directly in your UI.
+Datos tipados que puedes usar directamente en tu UI.
 
-## Quick start
+## Inicio rápido
 
-To use structured outputs, define a [JSON Schema](https://json-schema.org/understanding-json-schema/about) describing the shape of data you want, then pass it to `query()` via the `outputFormat` option (TypeScript) or `output_format` option (Python). When the agent finishes, the result message includes a `structured_output` field with validated data matching your schema.
+Para usar salidas estructuradas, define un [JSON Schema](https://json-schema.org/understanding-json-schema/about) que describa la forma de los datos que quieres, luego pásalo a `query()` mediante la opción `outputFormat` (TypeScript) o `output_format` (Python). Cuando el agente termina, el mensaje de resultado incluye un campo `structured_output` con datos validados que coinciden con tu schema.
 
-The example below asks the agent to research Anthropic and return the company name, year founded, and headquarters as structured output.
+El ejemplo a continuación le pide al agente que investigue Anthropic y devuelva el nombre de la empresa, el año de fundación y la sede como salida estructurada.
 
 **TypeScript**
 ```typescript
@@ -118,11 +118,11 @@ async def main():
 asyncio.run(main())
 ```
 
-## Type-safe schemas with Zod and Pydantic
+## Schemas con seguridad de tipos usando Zod y Pydantic
 
-Instead of writing JSON Schema by hand, you can use [Zod](https://zod.dev/) (TypeScript) or [Pydantic](https://docs.pydantic.dev/latest/) (Python) to define your schema. These libraries generate the JSON Schema for you and let you parse the response into a fully-typed object you can use throughout your codebase with autocomplete and type checking.
+En lugar de escribir JSON Schema a mano, puedes usar [Zod](https://zod.dev/) (TypeScript) o [Pydantic](https://docs.pydantic.dev/latest/) (Python) para definir tu schema. Estas bibliotecas generan el JSON Schema por ti y te permiten parsear la respuesta en un objeto completamente tipado que puedes usar en todo tu código con autocompletado y verificación de tipos.
 
-The example below defines a schema for a feature implementation plan with a summary, list of steps (each with complexity level), and potential risks. The agent plans the feature and returns a typed `FeaturePlan` object. You can then access properties like `plan.summary` and iterate over `plan.steps` with full type safety.
+El ejemplo a continuación define un schema para un plan de implementación de funcionalidad con un resumen, lista de pasos (cada uno con nivel de complejidad) y riesgos potenciales. El agente planifica la funcionalidad y devuelve un objeto `FeaturePlan` tipado. Luego puedes acceder a propiedades como `plan.summary` e iterar sobre `plan.steps` con total seguridad de tipos.
 
 **TypeScript**
 ```typescript
@@ -218,26 +218,26 @@ async def main():
 asyncio.run(main())
 ```
 
-**Benefits:**
-- Full type inference (TypeScript) and type hints (Python)
-- Runtime validation with `safeParse()` or `model_validate()`
-- Better error messages
-- Composable, reusable schemas
+**Beneficios:**
+- Inferencia de tipos completa (TypeScript) y anotaciones de tipo (Python)
+- Validación en tiempo de ejecución con `safeParse()` o `model_validate()`
+- Mejores mensajes de error
+- Schemas componibles y reutilizables
 
-## Output format configuration
+## Configuración del formato de salida
 
-The `outputFormat` (TypeScript) or `output_format` (Python) option accepts an object with:
+La opción `outputFormat` (TypeScript) o `output_format` (Python) acepta un objeto con:
 
-- `type`: Set to `"json_schema"` for structured outputs
-- `schema`: A [JSON Schema](https://json-schema.org/understanding-json-schema/about) object defining your output structure. You can generate this from a Zod schema with `z.toJSONSchema()` or a Pydantic model with `.model_json_schema()`
+- `type`: Establece en `"json_schema"` para salidas estructuradas
+- `schema`: Un objeto [JSON Schema](https://json-schema.org/understanding-json-schema/about) que define la estructura de tu salida. Puedes generarlo desde un schema Zod con `z.toJSONSchema()` o desde un modelo Pydantic con `.model_json_schema()`
 
-The SDK supports standard JSON Schema features including all basic types (object, array, string, number, boolean, null), `enum`, `const`, `required`, nested objects, and `$ref` definitions. For the full list of supported features and limitations, see [JSON Schema limitations](/docs/en/build-with-claude/structured-outputs#json-schema-limitations).
+El SDK admite las características estándar de JSON Schema, incluyendo todos los tipos básicos (object, array, string, number, boolean, null), `enum`, `const`, `required`, objetos anidados y definiciones `$ref`. Para la lista completa de características admitidas y limitaciones, consulta [Limitaciones de JSON Schema](/docs/en/build-with-claude/structured-outputs#json-schema-limitations).
 
-## Example: TODO tracking agent
+## Ejemplo: agente de seguimiento de TODOs
 
-This example demonstrates how structured outputs work with multi-step tool use. The agent needs to find TODO comments in the codebase, then look up git blame information for each one. It autonomously decides which tools to use (Grep to search, Bash to run git commands) and combines the results into a single structured response.
+Este ejemplo demuestra cómo funcionan las salidas estructuradas con el uso de herramientas en múltiples pasos. El agente necesita encontrar comentarios TODO en el código base, luego buscar información de `git blame` para cada uno. Decide de forma autónoma qué herramientas usar (Grep para buscar, Bash para ejecutar comandos git) y combina los resultados en una única respuesta estructurada.
 
-The schema includes optional fields (`author` and `date`) since git blame information might not be available for all files. The agent fills in what it can find and omits the rest.
+El schema incluye campos opcionales (`author` y `date`) ya que la información de `git blame` puede no estar disponible para todos los archivos. El agente completa lo que puede encontrar y omite el resto.
 
 **TypeScript**
 ```typescript
@@ -338,18 +338,18 @@ async def main():
 asyncio.run(main())
 ```
 
-## Error handling
+## Manejo de errores
 
-Structured output generation can fail when the agent cannot produce valid JSON matching your schema. This typically happens when the schema is too complex for the task, the task itself is ambiguous, or the agent hits its retry limit trying to fix validation errors.
+La generación de salidas estructuradas puede fallar cuando el agente no puede producir JSON válido que coincida con tu schema. Esto ocurre típicamente cuando el schema es demasiado complejo para la tarea, la tarea en sí es ambigua, o el agente alcanza su límite de reintentos al intentar corregir errores de validación.
 
-When an error occurs, the result message has a `subtype` indicating what went wrong:
+Cuando ocurre un error, el mensaje de resultado tiene un campo `subtype` que indica qué salió mal:
 
-| Subtype | Meaning |
+| Subtype | Significado |
 |---------|---------|
-| `success` | Output was generated and validated successfully |
-| `error_max_structured_output_retries` | Agent couldn't produce valid output after multiple attempts |
+| `success` | La salida fue generada y validada correctamente |
+| `error_max_structured_output_retries` | El agente no pudo producir una salida válida después de múltiples intentos |
 
-The example below checks the `subtype` field to determine whether the output was generated successfully or if you need to handle a failure:
+El ejemplo a continuación comprueba el campo `subtype` para determinar si la salida fue generada correctamente o si necesitas manejar un fallo:
 
 **TypeScript**
 ```typescript
@@ -391,14 +391,14 @@ async for message in query(
             print("Could not produce valid output")
 ```
 
-**Tips for avoiding errors:**
+**Consejos para evitar errores:**
 
-- **Keep schemas focused.** Deeply nested schemas with many required fields are harder to satisfy. Start simple and add complexity as needed.
-- **Match schema to task.** If the task might not have all the information your schema requires, make those fields optional.
-- **Use clear prompts.** Ambiguous prompts make it harder for the agent to know what output to produce.
+- **Mantén los schemas enfocados.** Los schemas profundamente anidados con muchos campos requeridos son más difíciles de satisfacer. Empieza simple y añade complejidad según sea necesario.
+- **Adapta el schema a la tarea.** Si la tarea puede no tener toda la información que tu schema requiere, haz que esos campos sean opcionales.
+- **Usa prompts claros.** Los prompts ambiguos dificultan que el agente sepa qué salida producir.
 
-## Related resources
+## Recursos relacionados
 
-- [JSON Schema documentation](https://json-schema.org/): learn JSON Schema syntax for defining complex schemas with nested objects, arrays, enums, and validation constraints
-- [API Structured Outputs](/docs/en/build-with-claude/structured-outputs): use structured outputs with the Claude API directly for single-turn requests without tool use
-- [Custom tools](/docs/en/agent-sdk/custom-tools): give your agent custom tools to call during execution before returning structured output
+- [Documentación de JSON Schema](https://json-schema.org/): aprende la sintaxis de JSON Schema para definir schemas complejos con objetos anidados, arrays, enums y restricciones de validación
+- [Salidas estructuradas de la API](/docs/en/build-with-claude/structured-outputs): usa salidas estructuradas directamente con la API de Claude para solicitudes de un solo turno sin uso de herramientas
+- [Herramientas personalizadas](./Custom%20Tools.md): proporciona a tu agente herramientas personalizadas para llamar durante la ejecución antes de devolver la salida estructurada

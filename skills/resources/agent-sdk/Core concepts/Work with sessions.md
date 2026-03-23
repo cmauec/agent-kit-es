@@ -1,50 +1,50 @@
 # Work with sessions
 
-How sessions persist agent conversation history, and when to use continue, resume, and fork to return to a prior run.
+Cómo las sesiones persisten el historial de conversación del agente, y cuándo usar continue, resume y fork para volver a una ejecución anterior.
 
 ---
 
-A session is the conversation history the SDK accumulates while your agent works. It contains your prompt, every tool call the agent made, every tool result, and every response. The SDK writes it to disk automatically so you can return to it later.
+Una sesión es el historial de conversación que el SDK acumula mientras tu agente trabaja. Contiene tu prompt, cada llamada a herramienta que hizo el agente, cada resultado de herramienta y cada respuesta. El SDK la escribe en disco automáticamente para que puedas volver a ella más tarde.
 
-Returning to a session means the agent has full context from before: files it already read, analysis it already performed, decisions it already made. You can ask a follow-up question, recover from an interruption, or branch off to try a different approach.
+Volver a una sesión significa que el agente tiene el contexto completo de antes: archivos que ya leyó, análisis que ya realizó, decisiones que ya tomó. Puedes hacer una pregunta de seguimiento, recuperarte de una interrupción o ramificarte para probar un enfoque diferente.
 
-> **Nota:** Sessions persist the **conversation**, not the filesystem. To snapshot and revert file changes the agent made, use [file checkpointing](/docs/en/agent-sdk/file-checkpointing).
+> **Nota:** Las sesiones persisten la **conversación**, no el sistema de archivos. Para hacer snapshots y revertir los cambios de archivos que hizo el agente, usa [file checkpointing](../Guides/Rewind%20file%20changes%20with%20checkpointing.md).
 
-This guide covers how to pick the right approach for your app, the SDK interfaces that track sessions automatically, how to capture session IDs and use `resume` and `fork` manually, and what to know about resuming sessions across hosts.
+Esta guía cubre cómo elegir el enfoque correcto para tu aplicación, las interfaces del SDK que rastrean sesiones automáticamente, cómo capturar IDs de sesión y usar `resume` y `fork` manualmente, y qué tener en cuenta al reanudar sesiones entre hosts.
 
-## Choose an approach
+## Elige un enfoque
 
-How much session handling you need depends on your application's shape. Session management comes into play when you send multiple prompts that should share context. Within a single `query()` call, the agent already takes as many turns as it needs, and permission prompts and `AskUserQuestion` are [handled in-loop](/docs/en/agent-sdk/user-input) (they don't end the call).
+La cantidad de manejo de sesiones que necesitas depende de la forma de tu aplicación. La gestión de sesiones entra en juego cuando envías múltiples prompts que deben compartir contexto. Dentro de una sola llamada a `query()`, el agente ya toma todos los turnos que necesita, y los prompts de permisos y `AskUserQuestion` se [gestionan dentro del bucle](../Guides/Handle%20approvals%20and%20user%20input.md) (no terminan la llamada).
 
-| What you're building | What to use |
+| Qué estás construyendo | Qué usar |
 |:---|:---|
-| One-shot task: single prompt, no follow-up | Nothing extra. One `query()` call handles it. |
-| Multi-turn chat in one process | [`ClaudeSDKClient` (Python) or `continue: true` (TypeScript)](#automatic-session-management). The SDK tracks the session for you with no ID handling. |
-| Pick up where you left off after a process restart | `continue_conversation=True` (Python) / `continue: true` (TypeScript). Resumes the most recent session in the directory, no ID needed. |
-| Resume a specific past session (not the most recent) | Capture the session ID and pass it to `resume`. |
-| Try an alternative approach without losing the original | Fork the session. |
-| Stateless task, don't want anything written to disk (TypeScript only) | Set [`persistSession: false`](/docs/en/agent-sdk/typescript#options). The session exists only in memory for the duration of the call. Python always persists to disk. |
+| Tarea de un solo disparo: un prompt, sin seguimiento | Nada extra. Una sola llamada a `query()` lo maneja. |
+| Chat multi-turno en un solo proceso | [`ClaudeSDKClient` (Python) o `continue: true` (TypeScript)](#automatic-session-management). El SDK rastrea la sesión por ti sin manejo de IDs. |
+| Continuar donde se dejó después de reiniciar el proceso | `continue_conversation=True` (Python) / `continue: true` (TypeScript). Reanuda la sesión más reciente en el directorio, sin necesidad de ID. |
+| Reanudar una sesión pasada específica (no la más reciente) | Captura el ID de sesión y pásalo a `resume`. |
+| Probar un enfoque alternativo sin perder el original | Haz un fork de la sesión. |
+| Tarea sin estado, no quieres que nada se escriba en disco (solo TypeScript) | Establece `persistSession: false`. La sesión existe solo en memoria durante la duración de la llamada. Python siempre persiste en disco. |
 
-### Continue, resume, and fork
+### Continue, resume y fork
 
-Continue, resume, and fork are option fields you set on `query()` ([`ClaudeAgentOptions`](/docs/en/agent-sdk/python#claude-agent-options) in Python, [`Options`](/docs/en/agent-sdk/typescript#options) in TypeScript).
+Continue, resume y fork son campos de opción que se establecen en `query()` (`ClaudeAgentOptions` en Python, `Options` en TypeScript).
 
-**Continue** and **resume** both pick up an existing session and add to it. The difference is how they find that session:
+**Continue** y **resume** ambos retoman una sesión existente y le añaden contenido. La diferencia está en cómo encuentran esa sesión:
 
-- **Continue** finds the most recent session in the current directory. You don't track anything. Works well when your app runs one conversation at a time.
-- **Resume** takes a specific session ID. You track the ID. Required when you have multiple sessions (for example, one per user in a multi-user app) or want to return to one that isn't the most recent.
+- **Continue** encuentra la sesión más reciente en el directorio actual. No necesitas rastrear nada. Funciona bien cuando tu aplicación ejecuta una conversación a la vez.
+- **Resume** toma un ID de sesión específico. Tú rastresas el ID. Es necesario cuando tienes múltiples sesiones (por ejemplo, una por usuario en una aplicación multi-usuario) o quieres volver a una que no es la más reciente.
 
-**Fork** is different: it creates a new session that starts with a copy of the original's history. The original stays unchanged. Use fork to try a different direction while keeping the option to go back.
+**Fork** es diferente: crea una nueva sesión que comienza con una copia del historial del original. El original permanece sin cambios. Usa fork para probar una dirección diferente mientras conservas la opción de regresar.
 
-## Automatic session management
+## Gestión automática de sesiones
 
-Both SDKs offer an interface that tracks session state for you across calls, so you don't pass IDs around manually. Use these for multi-turn conversations within a single process.
+Ambos SDKs ofrecen una interfaz que rastrea el estado de la sesión por ti entre llamadas, para que no tengas que pasar IDs manualmente. Úsalas para conversaciones multi-turno dentro de un solo proceso.
 
 ### Python: `ClaudeSDKClient`
 
-[`ClaudeSDKClient`](/docs/en/agent-sdk/python#claude-sdk-client) handles session IDs internally. Each call to `client.query()` automatically continues the same session. Call [`client.receive_response()`](/docs/en/agent-sdk/python#claude-sdk-client) to iterate over the messages for the current query. The client must be used as an async context manager.
+`ClaudeSDKClient` maneja los IDs de sesión internamente. Cada llamada a `client.query()` continúa automáticamente la misma sesión. Llama a `client.receive_response()` para iterar sobre los mensajes de la consulta actual. El cliente debe usarse como un context manager asíncrono.
 
-This example runs two queries against the same `client`. The first asks the agent to analyze a module; the second asks it to refactor that module. Because both calls go through the same client instance, the second query has full context from the first without any explicit `resume` or session ID:
+Este ejemplo ejecuta dos consultas contra el mismo `client`. La primera le pide al agente que analice un módulo; la segunda le pide que refactorice ese módulo. Como ambas llamadas pasan por la misma instancia del cliente, la segunda consulta tiene el contexto completo de la primera sin ningún `resume` ni ID de sesión explícito:
 
 ```python
 import asyncio
@@ -92,13 +92,13 @@ async def main():
 asyncio.run(main())
 ```
 
-See the [Python SDK reference](/docs/en/agent-sdk/python#choosing-between-query-and-claude-sdk-client) for details on when to use `ClaudeSDKClient` vs the standalone `query()` function.
+Consulta la referencia del SDK de Python para obtener detalles sobre cuándo usar `ClaudeSDKClient` frente a la función `query()` independiente.
 
 ### TypeScript: `continue: true`
 
-The stable TypeScript SDK (the `query()` function used throughout these docs, sometimes called V1) doesn't have a session-holding client object like Python's `ClaudeSDKClient`. Instead, pass `continue: true` on each subsequent `query()` call and the SDK picks up the most recent session in the current directory. No ID tracking required.
+El SDK estable de TypeScript (la función `query()` usada a lo largo de esta documentación, a veces llamada V1) no tiene un objeto cliente que mantenga la sesión como el `ClaudeSDKClient` de Python. En su lugar, pasa `continue: true` en cada llamada subsiguiente a `query()` y el SDK retoma la sesión más reciente en el directorio actual. No se requiere rastreo de IDs.
 
-This example makes two separate `query()` calls. The first creates a fresh session; the second sets `continue: true`, which tells the SDK to find and resume the most recent session on disk. The agent has full context from the first call:
+Este ejemplo hace dos llamadas separadas a `query()`. La primera crea una sesión nueva; la segunda establece `continue: true`, lo que le indica al SDK que busque y reanude la sesión más reciente en disco. El agente tiene el contexto completo de la primera llamada:
 
 ```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -127,13 +127,13 @@ for await (const message of query({
 }
 ```
 
-> **Nota:** There's also a [V2 preview](/docs/en/agent-sdk/typescript-v2-preview) of the TypeScript SDK that provides `createSession()` with a `send` / `stream` pattern, closer to Python's `ClaudeSDKClient` in feel. V2 is unstable and its APIs may change; the rest of this documentation uses the stable V1 `query()` function.
+> **Nota:** También existe una [vista previa V2](/docs/en/agent-sdk/typescript-v2-preview) del SDK de TypeScript que proporciona `createSession()` con un patrón `send` / `stream`, más cercano en concepto al `ClaudeSDKClient` de Python. V2 es inestable y sus APIs pueden cambiar; el resto de esta documentación usa la función estable V1 `query()`.
 
-## Use session options with `query()`
+## Usa las opciones de sesión con `query()`
 
-### Capture the session ID
+### Captura el ID de sesión
 
-Resume and fork require a session ID. Read it from the `session_id` field on the result message ([`ResultMessage`](/docs/en/agent-sdk/python#result-message) in Python, [`SDKResultMessage`](/docs/en/agent-sdk/typescript#sdk-result-message) in TypeScript), which is present on every result regardless of success or error. In TypeScript the ID is also available earlier as a direct field on the init `SystemMessage`; in Python it's nested inside `SystemMessage.data`.
+Resume y fork requieren un ID de sesión. Léelo desde el campo `session_id` en el mensaje de resultado ([`ResultMessage`](/docs/en/agent-sdk/python#result-message) en Python, [`SDKResultMessage`](/docs/en/agent-sdk/typescript#sdk-result-message) en TypeScript), que está presente en cada resultado independientemente del éxito o error. En TypeScript el ID también está disponible antes como un campo directo en el `SystemMessage` de inicio; en Python está anidado dentro de `SystemMessage.data`.
 
 **Python**
 ```python
@@ -183,15 +183,15 @@ for await (const message of query({
 console.log(`Session ID: ${sessionId}`);
 ```
 
-### Resume by ID
+### Reanudar por ID
 
-Pass a session ID to `resume` to return to that specific session. The agent picks up with full context from wherever the session left off. Common reasons to resume:
+Pasa un ID de sesión a `resume` para volver a esa sesión específica. El agente retoma con el contexto completo desde donde se dejó la sesión. Razones comunes para reanudar:
 
-- **Follow up on a completed task.** The agent already analyzed something; now you want it to act on that analysis without re-reading files.
-- **Recover from a limit.** The first run ended with `error_max_turns` or `error_max_budget_usd` (see [Handle the result](/docs/en/agent-sdk/agent-loop#handle-the-result)); resume with a higher limit.
-- **Restart your process.** You captured the ID before shutdown and want to restore the conversation.
+- **Dar seguimiento a una tarea completada.** El agente ya analizó algo; ahora quieres que actúe sobre ese análisis sin volver a leer archivos.
+- **Recuperarse de un límite.** La primera ejecución terminó con `error_max_turns` o `error_max_budget_usd` (consulta [Handle the result](../How%20the%20agent%20loop%20works.md#handle-the-result)); reanuda con un límite más alto.
+- **Reiniciar tu proceso.** Capturaste el ID antes del apagado y quieres restaurar la conversación.
 
-This example resumes the session from [Capture the session ID](#capture-the-session-id) with a follow-up prompt. Because you're resuming, the agent already has the prior analysis in context:
+Este ejemplo reanuda la sesión de [Captura el ID de sesión](#capture-the-session-id) con un prompt de seguimiento. Como estás reanudando, el agente ya tiene el análisis previo en contexto:
 
 **Python**
 ```python
@@ -223,15 +223,15 @@ for await (const message of query({
 }
 ```
 
-> **Tip:** If a `resume` call returns a fresh session instead of the expected history, the most common cause is a mismatched `cwd`. Sessions are stored under `~/.claude/projects/<encoded-cwd>/*.jsonl`, where `<encoded-cwd>` is the absolute working directory with every non-alphanumeric character replaced by `-` (so `/Users/me/proj` becomes `-Users-me-proj`). If your resume call runs from a different directory, the SDK looks in the wrong place. The session file also needs to exist on the current machine.
+> **Tip:** Si una llamada a `resume` devuelve una sesión nueva en lugar del historial esperado, la causa más común es un `cwd` que no coincide. Las sesiones se almacenan en `~/.claude/projects/<encoded-cwd>/*.jsonl`, donde `<encoded-cwd>` es el directorio de trabajo absoluto con cada carácter no alfanumérico reemplazado por `-` (así `/Users/me/proj` se convierte en `-Users-me-proj`). Si tu llamada a resume se ejecuta desde un directorio diferente, el SDK busca en el lugar equivocado. El archivo de sesión también debe existir en la máquina actual.
 
-### Fork to explore alternatives
+### Fork para explorar alternativas
 
-Forking creates a new session that starts with a copy of the original's history but diverges from that point. The fork gets its own session ID; the original's ID and history stay unchanged. You end up with two independent sessions you can resume separately.
+Hacer un fork crea una nueva sesión que comienza con una copia del historial del original pero diverge desde ese punto. El fork obtiene su propio ID de sesión; el ID y el historial del original permanecen sin cambios. Terminas con dos sesiones independientes que puedes reanudar por separado.
 
-> **Nota:** Forking branches the conversation history, not the filesystem. If a forked agent edits files, those changes are real and visible to any session working in the same directory. To branch and revert file changes, use [file checkpointing](/docs/en/agent-sdk/file-checkpointing).
+> **Nota:** El fork ramifica el historial de la conversación, no el sistema de archivos. Si un agente con fork edita archivos, esos cambios son reales y visibles para cualquier sesión que trabaje en el mismo directorio. Para ramificar y revertir cambios de archivos, usa [file checkpointing](../Guides/Rewind%20file%20changes%20with%20checkpointing.md).
 
-This example builds on [Capture the session ID](#capture-the-session-id): you've already analyzed an auth module in `session_id` and want to explore OAuth2 without losing the JWT-focused thread. The first block forks the session and captures the fork's ID (`forked_id`); the second block resumes the original `session_id` to continue down the JWT path. You now have two session IDs pointing at two separate histories:
+Este ejemplo se basa en [Captura el ID de sesión](#capture-the-session-id): ya analizaste un módulo de autenticación en `session_id` y quieres explorar OAuth2 sin perder el hilo enfocado en JWT. El primer bloque hace un fork de la sesión y captura el ID del fork (`forked_id`); el segundo bloque reanuda el `session_id` original para continuar por el camino de JWT. Ahora tienes dos IDs de sesión apuntando a dos historiales separados:
 
 **Python**
 ```python
@@ -293,18 +293,18 @@ for await (const message of query({
 }
 ```
 
-## Resume across hosts
+## Reanudar entre hosts
 
-Session files are local to the machine that created them. To resume a session on a different host (CI workers, ephemeral containers, serverless), you have two options:
+Los archivos de sesión son locales a la máquina que los creó. Para reanudar una sesión en un host diferente (workers de CI, contenedores efímeros, serverless), tienes dos opciones:
 
-- **Move the session file.** Persist `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl` from the first run and restore it to the same path on the new host before calling `resume`. The `cwd` must match.
-- **Don't rely on session resume.** Capture the results you need (analysis output, decisions, file diffs) as application state and pass them into a fresh session's prompt. This is often more robust than shipping transcript files around.
+- **Mueve el archivo de sesión.** Persiste `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl` desde la primera ejecución y restáuralo en la misma ruta en el nuevo host antes de llamar a `resume`. El `cwd` debe coincidir.
+- **No dependas de la reanudación de sesiones.** Captura los resultados que necesitas (salida de análisis, decisiones, diffs de archivos) como estado de la aplicación y pásalos al prompt de una sesión nueva. Esto suele ser más robusto que transportar archivos de transcripción.
 
-Both SDKs expose functions for enumerating sessions on disk and reading their messages: [`listSessions()`](/docs/en/agent-sdk/typescript#list-sessions) and [`getSessionMessages()`](/docs/en/agent-sdk/typescript#get-session-messages) in TypeScript, [`list_sessions()`](/docs/en/agent-sdk/python#list-sessions) and [`get_session_messages()`](/docs/en/agent-sdk/python#get-session-messages) in Python. Use them to build custom session pickers, cleanup logic, or transcript viewers.
+Ambos SDKs exponen funciones para enumerar sesiones en disco y leer sus mensajes: [`listSessions()`](/docs/en/agent-sdk/typescript#list-sessions) y [`getSessionMessages()`](/docs/en/agent-sdk/typescript#get-session-messages) en TypeScript, [`list_sessions()`](/docs/en/agent-sdk/python#list-sessions) y [`get_session_messages()`](/docs/en/agent-sdk/python#get-session-messages) en Python. Úsalas para construir selectores de sesiones personalizados, lógica de limpieza o visores de transcripciones.
 
-## Related resources
+## Recursos relacionados
 
-- [How the agent loop works](/docs/en/agent-sdk/agent-loop): Understand turns, messages, and context accumulation within a session
-- [File checkpointing](/docs/en/agent-sdk/file-checkpointing): Track and revert file changes across sessions
-- [Python `ClaudeAgentOptions`](/docs/en/agent-sdk/python#claude-agent-options): Full session option reference for Python
-- [TypeScript `Options`](/docs/en/agent-sdk/typescript#options): Full session option reference for TypeScript
+- [Cómo funciona el bucle del agente](../How%20the%20agent%20loop%20works.md): Comprende turnos, mensajes y acumulación de contexto dentro de una sesión
+- [File checkpointing](../Guides/Rewind%20file%20changes%20with%20checkpointing.md): Rastrea y revierte cambios de archivos entre sesiones
+- Python `ClaudeAgentOptions`: Referencia completa de opciones de sesión para Python
+- TypeScript `Options`: Referencia completa de opciones de sesión para TypeScript

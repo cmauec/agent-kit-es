@@ -1,20 +1,20 @@
-# Handle approvals and user input
+# Manejar aprobaciones e input del usuario
 
-Surface Claude's approval requests and clarifying questions to users, then return their decisions to the SDK.
+Expone las solicitudes de aprobación y preguntas aclaratorias de Claude a los usuarios, y devuelve sus decisiones al SDK.
 
 ---
 
-While working on a task, Claude sometimes needs to check in with users. It might need permission before deleting files, or need to ask which database to use for a new project. Your application needs to surface these requests to users so Claude can continue with their input.
+Mientras trabaja en una tarea, Claude a veces necesita consultar con los usuarios. Puede necesitar permiso antes de eliminar archivos, o preguntar qué base de datos usar para un nuevo proyecto. Tu aplicación necesita exponer estas solicitudes a los usuarios para que Claude pueda continuar con su input.
 
-Claude requests user input in two situations: when it needs **permission to use a tool** (like deleting files or running commands), and when it has **clarifying questions** (via the `AskUserQuestion` tool). Both trigger your `canUseTool` callback, which pauses execution until you return a response. This is different from normal conversation turns where Claude finishes and waits for your next message.
+Claude solicita input del usuario en dos situaciones: cuando necesita **permiso para usar una herramienta** (como eliminar archivos o ejecutar comandos), y cuando tiene **preguntas aclaratorias** (a través de la herramienta `AskUserQuestion`). Ambas situaciones activan tu callback `canUseTool`, que pausa la ejecución hasta que devuelvas una respuesta. Esto es diferente de los turnos de conversación normales donde Claude termina y espera tu próximo mensaje.
 
-For clarifying questions, Claude generates the questions and options. Your role is to present them to users and return their selections. You can't add your own questions to this flow; if you need to ask users something yourself, do that separately in your application logic.
+Para las preguntas aclaratorias, Claude genera las preguntas y las opciones. Tu rol es presentárselas a los usuarios y devolver sus selecciones. No puedes agregar tus propias preguntas a este flujo; si necesitas preguntarle algo a los usuarios tú mismo, hazlo por separado en la lógica de tu aplicación.
 
-This guide shows you how to detect each type of request and respond appropriately.
+Esta guía muestra cómo detectar cada tipo de solicitud y responder de manera apropiada.
 
-## Detect when Claude needs input
+## Detectar cuándo Claude necesita input
 
-Pass a `canUseTool` callback in your query options. The callback fires whenever Claude needs user input, receiving the tool name and input as arguments:
+Pasa un callback `canUseTool` en las opciones de tu query. El callback se activa cada vez que Claude necesita input del usuario, recibiendo el nombre de la herramienta y el input como argumentos:
 
 **Python**
 ```python
@@ -35,36 +35,36 @@ async function handleToolRequest(toolName, input) {
 const options = { canUseTool: handleToolRequest };
 ```
 
-The callback fires in two cases:
+El callback se activa en dos casos:
 
-1. **Tool needs approval**: Claude wants to use a tool that isn't auto-approved by [permission rules](/docs/en/agent-sdk/permissions) or modes. Check `tool_name` for the tool (e.g., `"Bash"`, `"Write"`).
-2. **Claude asks a question**: Claude calls the `AskUserQuestion` tool. Check if `tool_name == "AskUserQuestion"` to handle it differently. If you specify a `tools` array, include `AskUserQuestion` for this to work. See [Handle clarifying questions](#handle-clarifying-questions) for details.
+1. **La herramienta necesita aprobación**: Claude quiere usar una herramienta que no está auto-aprobada por las [reglas de permisos](./Configure%20permissions.md) o los modos. Verifica `tool_name` para identificar la herramienta (ej., `"Bash"`, `"Write"`).
+2. **Claude hace una pregunta**: Claude llama a la herramienta `AskUserQuestion`. Verifica si `tool_name == "AskUserQuestion"` para manejarlo de forma diferente. Si especificas un array `tools`, incluye `AskUserQuestion` para que esto funcione. Consulta [Manejar preguntas aclaratorias](#handle-clarifying-questions) para más detalles.
 
-> **Nota:** To automatically allow or deny tools without prompting users, use [hooks](/docs/en/agent-sdk/hooks) instead. Hooks execute before `canUseTool` and can allow, deny, or modify requests based on your own logic. You can also use the [`PermissionRequest` hook](/docs/en/agent-sdk/hooks#available-hooks) to send external notifications (Slack, email, push) when Claude is waiting for approval.
+> **Nota:** Para permitir o denegar herramientas automáticamente sin consultar a los usuarios, usa [hooks](./Intercept%20and%20control%20agent%20behavior%20with%20hooks.md) en su lugar. Los hooks se ejecutan antes que `canUseTool` y pueden permitir, denegar o modificar solicitudes según tu propia lógica. También puedes usar el hook [`PermissionRequest`](./Intercept%20and%20control%20agent%20behavior%20with%20hooks.md#available-hooks) para enviar notificaciones externas (Slack, email, push) cuando Claude esté esperando aprobación.
 
-## Handle tool approval requests
+## Manejar solicitudes de aprobación de herramientas
 
-Once you've passed a `canUseTool` callback in your query options, it fires when Claude wants to use a tool that isn't auto-approved. Your callback receives two arguments:
+Una vez que hayas pasado un callback `canUseTool` en las opciones de tu query, se activa cuando Claude quiere usar una herramienta que no está auto-aprobada. Tu callback recibe dos argumentos:
 
-| Argument | Description |
+| Argumento | Descripción |
 |----------|-------------|
-| `toolName` | The name of the tool Claude wants to use (e.g., `"Bash"`, `"Write"`, `"Edit"`) |
-| `input` | The parameters Claude is passing to the tool. Contents vary by tool. |
+| `toolName` | El nombre de la herramienta que Claude quiere usar (ej., `"Bash"`, `"Write"`, `"Edit"`) |
+| `input` | Los parámetros que Claude está pasando a la herramienta. El contenido varía según la herramienta. |
 
-The `input` object contains tool-specific parameters. Common examples:
+El objeto `input` contiene parámetros específicos de cada herramienta. Ejemplos comunes:
 
-| Tool | Input fields |
+| Herramienta | Campos de input |
 |------|--------------|
 | `Bash` | `command`, `description`, `timeout` |
 | `Write` | `file_path`, `content` |
 | `Edit` | `file_path`, `old_string`, `new_string` |
 | `Read` | `file_path`, `offset`, `limit` |
 
-See the SDK reference for complete input schemas: [Python](/docs/en/agent-sdk/python#tool-input-output-types) | [TypeScript](/docs/en/agent-sdk/typescript#tool-input-types).
+Consulta la referencia del SDK para los esquemas de input completos: [Python](/docs/en/agent-sdk/python#tool-input-output-types) | [TypeScript](/docs/en/agent-sdk/typescript#tool-input-types).
 
-You can display this information to the user so they can decide whether to allow or reject the action, then return the appropriate response.
+Puedes mostrar esta información al usuario para que decida si permitir o rechazar la acción, y luego devolver la respuesta apropiada.
 
-The following example asks Claude to create and delete a test file. When Claude attempts each operation, the callback prints the tool request to the terminal and prompts for y/n approval.
+El siguiente ejemplo le pide a Claude que cree y elimine un archivo de prueba. Cuando Claude intenta cada operación, el callback imprime la solicitud de herramienta en la terminal y pide aprobación y/n.
 
 **Python**
 ```python
@@ -183,20 +183,20 @@ for await (const message of query({
 }
 ```
 
-> **Nota:** In Python, `can_use_tool` requires [streaming mode](/docs/en/agent-sdk/streaming-vs-single-mode) and a `PreToolUse` hook that returns `{"continue_": True}` to keep the stream open. Without this hook, the stream closes before the permission callback can be invoked.
+> **Nota:** En Python, `can_use_tool` requiere el [modo streaming](./Streaming%20Input.md) y un hook `PreToolUse` que devuelva `{"continue_": True}` para mantener el stream abierto. Sin este hook, el stream se cierra antes de que el callback de permisos pueda ser invocado.
 
-This example uses a `y/n` flow where any input other than `y` is treated as a denial. In practice, you might build a richer UI that lets users modify the request, provide feedback, or redirect Claude entirely. See [Respond to tool requests](#respond-to-tool-requests) for all the ways you can respond.
+Este ejemplo usa un flujo y/n donde cualquier input distinto a `y` se trata como una denegación. En la práctica, podrías construir una interfaz más rica que permita a los usuarios modificar la solicitud, proporcionar feedback, o redirigir a Claude por completo. Consulta [Responder a solicitudes de herramientas](#respond-to-tool-requests) para conocer todas las formas en que puedes responder.
 
-### Respond to tool requests
+### Responder a solicitudes de herramientas
 
-Your callback returns one of two response types:
+Tu callback devuelve uno de dos tipos de respuesta:
 
-| Response | Python | TypeScript |
+| Respuesta | Python | TypeScript |
 |----------|--------|------------|
-| **Allow** | `PermissionResultAllow(updated_input=...)` | `{ behavior: "allow", updatedInput }` |
-| **Deny** | `PermissionResultDeny(message=...)` | `{ behavior: "deny", message }` |
+| **Permitir** | `PermissionResultAllow(updated_input=...)` | `{ behavior: "allow", updatedInput }` |
+| **Denegar** | `PermissionResultDeny(message=...)` | `{ behavior: "deny", message }` |
 
-When allowing, pass the tool input (original or modified). When denying, provide a message explaining why. Claude sees this message and may adjust its approach.
+Al permitir, pasa el input de la herramienta (original o modificado). Al denegar, proporciona un mensaje explicando el motivo. Claude ve este mensaje y puede ajustar su enfoque.
 
 **Python**
 ```python
@@ -218,17 +218,17 @@ return { behavior: "allow", updatedInput: input };
 return { behavior: "deny", message: "User rejected this action" };
 ```
 
-Beyond allowing or denying, you can modify the tool's input or provide context that helps Claude adjust its approach:
+Más allá de permitir o denegar, puedes modificar el input de la herramienta o proporcionar contexto que ayude a Claude a ajustar su enfoque:
 
-- **Approve**: let the tool execute as Claude requested
-- **Approve with changes**: modify the input before execution (e.g., sanitize paths, add constraints)
-- **Reject**: block the tool and tell Claude why
-- **Suggest alternative**: block but guide Claude toward what the user wants instead
-- **Redirect entirely**: use [streaming input](/docs/en/agent-sdk/streaming-vs-single-mode) to send Claude a completely new instruction
+- **Aprobar**: deja que la herramienta se ejecute tal como Claude lo solicitó
+- **Aprobar con cambios**: modifica el input antes de la ejecución (ej., sanear paths, agregar restricciones)
+- **Rechazar**: bloquea la herramienta y dile a Claude por qué
+- **Sugerir una alternativa**: bloquea pero guía a Claude hacia lo que el usuario quiere en su lugar
+- **Redirigir por completo**: usa el [input en streaming](./Streaming%20Input.md) para enviarle a Claude una instrucción completamente nueva
 
-#### Approve
+#### Aprobar
 
-The user approves the action as-is. Pass through the `input` from your callback unchanged and the tool executes exactly as Claude requested.
+El usuario aprueba la acción tal como está. Pasa el `input` de tu callback sin cambios y la herramienta se ejecuta exactamente como Claude lo solicitó.
 
 **Python**
 ```python
@@ -254,9 +254,9 @@ canUseTool: async (toolName, input) => {
 };
 ```
 
-#### Approve with changes
+#### Aprobar con cambios
 
-The user approves but wants to modify the request first. You can change the input before the tool executes. Claude sees the result but isn't told you changed anything. Useful for sanitizing parameters, adding constraints, or scoping access.
+El usuario aprueba pero quiere modificar la solicitud primero. Puedes cambiar el input antes de que la herramienta se ejecute. Claude ve el resultado pero no se le informa de que cambiaste algo. Útil para sanear parámetros, agregar restricciones o limitar el acceso.
 
 **Python**
 ```python
@@ -286,9 +286,9 @@ canUseTool: async (toolName, input) => {
 };
 ```
 
-#### Reject
+#### Rechazar
 
-The user doesn't want this action to happen. Block the tool and provide a message explaining why. Claude sees this message and may try a different approach.
+El usuario no quiere que esta acción ocurra. Bloquea la herramienta y proporciona un mensaje explicando el motivo. Claude ve este mensaje y puede intentar un enfoque diferente.
 
 **Python**
 ```python
@@ -315,9 +315,9 @@ canUseTool: async (toolName, input) => {
 };
 ```
 
-#### Suggest alternative
+#### Sugerir una alternativa
 
-The user doesn't want this specific action, but has a different idea. Block the tool and include guidance in your message. Claude will read this and decide how to proceed based on your feedback.
+El usuario no quiere esta acción específica, pero tiene una idea diferente. Bloquea la herramienta e incluye orientación en tu mensaje. Claude leerá esto y decidirá cómo proceder en base a tu feedback.
 
 **Python**
 ```python
@@ -345,21 +345,21 @@ canUseTool: async (toolName, input) => {
 };
 ```
 
-#### Redirect entirely
+#### Redirigir por completo
 
-For a complete change of direction (not just a nudge), use [streaming input](/docs/en/agent-sdk/streaming-vs-single-mode) to send Claude a new instruction directly. This bypasses the current tool request and gives Claude entirely new instructions to follow.
+Para un cambio de dirección completo (no solo un pequeño ajuste), usa el [input en streaming](./Streaming%20Input.md) para enviarle a Claude una nueva instrucción directamente. Esto omite la solicitud de herramienta actual y le da a Claude instrucciones completamente nuevas a seguir.
 
-## Handle clarifying questions
+## Manejar preguntas aclaratorias
 
-When Claude needs more direction on a task with multiple valid approaches, it calls the `AskUserQuestion` tool. This triggers your `canUseTool` callback with `toolName` set to `AskUserQuestion`. The input contains Claude's questions as multiple-choice options, which you display to the user and return their selections.
+Cuando Claude necesita más orientación en una tarea con múltiples enfoques válidos, llama a la herramienta `AskUserQuestion`. Esto activa tu callback `canUseTool` con `toolName` establecido en `AskUserQuestion`. El input contiene las preguntas de Claude como opciones de selección múltiple, que presentas al usuario y devuelves sus selecciones.
 
-> **Tip:** Clarifying questions are especially common in [`plan` mode](/docs/en/agent-sdk/permissions#plan-mode-plan), where Claude explores the codebase and asks questions before proposing a plan. This makes plan mode ideal for interactive workflows where you want Claude to gather requirements before making changes.
+> **Tip:** Las preguntas aclaratorias son especialmente comunes en el [modo `plan`](./Configure%20permissions.md#plan-mode-plan), donde Claude explora el código base y hace preguntas antes de proponer un plan. Esto hace que el modo plan sea ideal para flujos de trabajo interactivos donde quieres que Claude recopile requisitos antes de realizar cambios.
 
-The following steps show how to handle clarifying questions:
+Los siguientes pasos muestran cómo manejar las preguntas aclaratorias:
 
-### 1. Pass a canUseTool callback
+### 1. Pasar un callback canUseTool
 
-Pass a `canUseTool` callback in your query options. By default, `AskUserQuestion` is available. If you specify a `tools` array to restrict Claude's capabilities (for example, a read-only agent with only `Read`, `Glob`, and `Grep`), include `AskUserQuestion` in that array. Otherwise, Claude won't be able to ask clarifying questions:
+Pasa un callback `canUseTool` en las opciones de tu query. Por defecto, `AskUserQuestion` está disponible. Si especificas un array `tools` para restringir las capacidades de Claude (por ejemplo, un agente de solo lectura con únicamente `Read`, `Glob` y `Grep`), incluye `AskUserQuestion` en ese array. De lo contrario, Claude no podrá hacer preguntas aclaratorias:
 
 **Python**
 ```python
@@ -390,9 +390,9 @@ for await (const message of query({
 }
 ```
 
-### 2. Detect AskUserQuestion
+### 2. Detectar AskUserQuestion
 
-In your callback, check if `toolName` equals `AskUserQuestion` to handle it differently from other tools:
+En tu callback, verifica si `toolName` es igual a `AskUserQuestion` para manejarlo de forma diferente a otras herramientas:
 
 **Python**
 ```python
@@ -416,9 +416,9 @@ canUseTool: async (toolName, input) => {
 };
 ```
 
-### 3. Parse the question input
+### 3. Parsear el input de la pregunta
 
-The input contains Claude's questions in a `questions` array. Each question has a `question` (the text to display), `options` (the choices), and `multiSelect` (whether multiple selections are allowed):
+El input contiene las preguntas de Claude en un array `questions`. Cada pregunta tiene un campo `question` (el texto a mostrar), `options` (las opciones) y `multiSelect` (si se permiten múltiples selecciones):
 
 ```json
 {
@@ -445,22 +445,22 @@ The input contains Claude's questions in a `questions` array. Each question has 
 }
 ```
 
-See [Question format](#question-format) for full field descriptions.
+Consulta [Formato de pregunta](#question-format) para descripciones completas de los campos.
 
-### 4. Collect answers from the user
+### 4. Recopilar las respuestas del usuario
 
-Present the questions to the user and collect their selections. How you do this depends on your application: a terminal prompt, a web form, a mobile dialog, etc.
+Presenta las preguntas al usuario y recoge sus selecciones. La forma de hacerlo depende de tu aplicación: un prompt en la terminal, un formulario web, un diálogo móvil, etc.
 
-### 5. Return answers to Claude
+### 5. Devolver las respuestas a Claude
 
-Build the `answers` object as a record where each key is the `question` text and each value is the selected option's `label`:
+Construye el objeto `answers` como un registro donde cada clave es el texto del campo `question` y cada valor es el `label` de la opción seleccionada:
 
-| From the question object | Use as |
+| Del objeto de pregunta | Usar como |
 |--------------------------|--------|
-| `question` field (e.g., `"How should I format the output?"`) | Key |
-| Selected option's `label` field (e.g., `"Summary"`) | Value |
+| Campo `question` (ej., `"How should I format the output?"`) | Clave |
+| Campo `label` de la opción seleccionada (ej., `"Summary"`) | Valor |
 
-For multi-select questions, join multiple labels with `", "`. If you [support free-text input](#support-free-text-input), use the user's custom text as the value.
+Para preguntas de selección múltiple, une múltiples labels con `", "`. Si [admites input de texto libre](#support-free-text-input), usa el texto personalizado del usuario como valor.
 
 **Python**
 ```python
@@ -489,18 +489,18 @@ return {
 };
 ```
 
-### Question format
+### Formato de pregunta
 
-The input contains Claude's generated questions in a `questions` array. Each question has these fields:
+El input contiene las preguntas generadas por Claude en un array `questions`. Cada pregunta tiene estos campos:
 
-| Field | Description |
+| Campo | Descripción |
 |-------|-------------|
-| `question` | The full question text to display |
-| `header` | Short label for the question (max 12 characters) |
-| `options` | Array of 2-4 choices, each with `label` and `description`. TypeScript: optionally `preview` (see [below](#option-previews-type-script)) |
-| `multiSelect` | If `true`, users can select multiple options |
+| `question` | El texto completo de la pregunta a mostrar |
+| `header` | Etiqueta corta para la pregunta (máximo 12 caracteres) |
+| `options` | Array de 2-4 opciones, cada una con `label` y `description`. TypeScript: opcionalmente `preview` (ver [más abajo](#option-previews-type-script)) |
+| `multiSelect` | Si es `true`, los usuarios pueden seleccionar múltiples opciones |
 
-The structure your callback receives:
+La estructura que recibe tu callback:
 
 ```json
 {
@@ -518,17 +518,17 @@ The structure your callback receives:
 }
 ```
 
-#### Option previews (TypeScript)
+#### Previsualizaciones de opciones (TypeScript)
 
-`toolConfig.askUserQuestion.previewFormat` adds a `preview` field to each option so your app can show a visual mockup alongside the label. Without this setting, Claude does not generate previews and the field is absent.
+`toolConfig.askUserQuestion.previewFormat` agrega un campo `preview` a cada opción para que tu app pueda mostrar una maqueta visual junto al label. Sin esta configuración, Claude no genera previsualizaciones y el campo estará ausente.
 
-| `previewFormat` | `preview` contains |
+| `previewFormat` | `preview` contiene |
 |:----------------|:-----------------------|
-| unset (default) | Field is absent. Claude does not generate previews. |
-| `"markdown"` | ASCII art and fenced code blocks |
-| `"html"` | A styled `<div>` fragment (the SDK rejects `<script>`, `<style>`, and `<!DOCTYPE>` before your callback runs) |
+| sin definir (por defecto) | El campo está ausente. Claude no genera previsualizaciones. |
+| `"markdown"` | Arte ASCII y bloques de código delimitados |
+| `"html"` | Un fragmento `<div>` con estilos (el SDK rechaza `<script>`, `<style>` y `<!DOCTYPE>` antes de que se ejecute tu callback) |
 
-The format applies to all questions in the session. Claude includes `preview` on options where a visual comparison helps (layout choices, color schemes) and omits it where one wouldn't (yes/no confirmations, text-only choices). Check for `undefined` before rendering.
+El formato aplica a todas las preguntas de la sesión. Claude incluye `preview` en las opciones donde una comparación visual ayuda (elecciones de diseño, esquemas de color) y lo omite donde no aportaría valor (confirmaciones sí/no, elecciones solo de texto). Verifica si es `undefined` antes de renderizar.
 
 ```typescript
 import { query } from "@anthropic-ai/claude-agent-sdk";
@@ -549,7 +549,7 @@ for await (const message of query({
 }
 ```
 
-An option with an HTML preview:
+Una opción con una previsualización HTML:
 
 ```json
 {
@@ -559,16 +559,16 @@ An option with an HTML preview:
 }
 ```
 
-### Response format
+### Formato de respuesta
 
-Return an `answers` object mapping each question's `question` field to the selected option's `label`:
+Devuelve un objeto `answers` que mapee el campo `question` de cada pregunta al `label` de la opción seleccionada:
 
-| Field | Description |
+| Campo | Descripción |
 |-------|-------------|
-| `questions` | Pass through the original questions array (required for tool processing) |
-| `answers` | Object where keys are question text and values are selected labels |
+| `questions` | Pasa el array de preguntas original (requerido para el procesamiento de la herramienta) |
+| `answers` | Objeto donde las claves son el texto de la pregunta y los valores son los labels seleccionados |
 
-For multi-select questions, join multiple labels with `", "`. For free-text input, use the user's custom text directly.
+Para preguntas de selección múltiple, une múltiples labels con `", "`. Para input de texto libre, usa el texto personalizado del usuario directamente.
 
 ```json
 {
@@ -582,26 +582,26 @@ For multi-select questions, join multiple labels with `", "`. For free-text inpu
 }
 ```
 
-#### Support free-text input
+#### Admitir input de texto libre
 
-Claude's predefined options won't always cover what users want. To let users type their own answer:
+Las opciones predefinidas de Claude no siempre cubrirán lo que los usuarios quieren. Para permitir que los usuarios escriban su propia respuesta:
 
-- Display an additional "Other" choice after Claude's options that accepts text input
-- Use the user's custom text as the answer value (not the word "Other")
+- Muestra una opción adicional "Other" después de las opciones de Claude que acepte input de texto
+- Usa el texto personalizado del usuario como valor de la respuesta (no la palabra "Other")
 
-See the [complete example](#complete-example) below for a full implementation.
+Consulta el [ejemplo completo](#complete-example) a continuación para una implementación completa.
 
-### Complete example
+### Ejemplo completo
 
-Claude asks clarifying questions when it needs user input to proceed. For example, when asked to help decide on a tech stack for a mobile app, Claude might ask about cross-platform vs native, backend preferences, or target platforms. These questions help Claude make decisions that match the user's preferences rather than guessing.
+Claude hace preguntas aclaratorias cuando necesita input del usuario para continuar. Por ejemplo, cuando se le pide ayuda para decidir el stack tecnológico de una app móvil, Claude podría preguntar sobre multiplataforma vs nativo, preferencias de backend, o plataformas objetivo. Estas preguntas ayudan a Claude a tomar decisiones que se alineen con las preferencias del usuario en lugar de adivinar.
 
-This example handles those questions in a terminal application. Here's what happens at each step:
+Este ejemplo maneja esas preguntas en una aplicación de terminal. Esto es lo que ocurre en cada paso:
 
-1. **Route the request**: The `canUseTool` callback checks if the tool name is `"AskUserQuestion"` and routes to a dedicated handler
-2. **Display questions**: The handler loops through the `questions` array and prints each question with numbered options
-3. **Collect input**: The user can enter a number to select an option, or type free text directly (e.g., "jquery", "i don't know")
-4. **Map answers**: The code checks if input is numeric (uses the option's label) or free text (uses the text directly)
-5. **Return to Claude**: The response includes both the original `questions` array and the `answers` mapping
+1. **Enrutar la solicitud**: el callback `canUseTool` verifica si el nombre de la herramienta es `"AskUserQuestion"` y enruta a un handler dedicado
+2. **Mostrar las preguntas**: el handler recorre el array `questions` e imprime cada pregunta con opciones numeradas
+3. **Recopilar el input**: el usuario puede ingresar un número para seleccionar una opción, o escribir texto libre directamente (ej., "jquery", "i don't know")
+4. **Mapear las respuestas**: el código verifica si el input es numérico (usa el label de la opción) o texto libre (usa el texto directamente)
+5. **Devolver a Claude**: la respuesta incluye tanto el array `questions` original como el mapeo de `answers`
 
 **Python**
 ```python
@@ -758,37 +758,37 @@ async function main() {
 main();
 ```
 
-## Limitations
+## Limitaciones
 
-- **Subagents**: `AskUserQuestion` is not currently available in subagents spawned via the Agent tool
-- **Question limits**: each `AskUserQuestion` call supports 1-4 questions with 2-4 options each
+- **Subagentes**: `AskUserQuestion` no está disponible actualmente en subagentes generados mediante la herramienta Agent
+- **Límites de preguntas**: cada llamada a `AskUserQuestion` admite entre 1 y 4 preguntas con entre 2 y 4 opciones cada una
 
-## Other ways to get user input
+## Otras formas de obtener input del usuario
 
-The `canUseTool` callback and `AskUserQuestion` tool cover most approval and clarification scenarios, but the SDK offers other ways to get input from users:
+El callback `canUseTool` y la herramienta `AskUserQuestion` cubren la mayoría de los escenarios de aprobación y aclaración, pero el SDK ofrece otras formas de obtener input de los usuarios:
 
-### Streaming input
+### Input en streaming
 
-Use [streaming input](/docs/en/agent-sdk/streaming-vs-single-mode) when you need to:
+Usa el [input en streaming](./Streaming%20Input.md) cuando necesites:
 
-- **Interrupt the agent mid-task**: send a cancel signal or change direction while Claude is working
-- **Provide additional context**: add information Claude needs without waiting for it to ask
-- **Build chat interfaces**: let users send follow-up messages during long-running operations
+- **Interrumpir al agente a mitad de la tarea**: enviar una señal de cancelación o cambiar de dirección mientras Claude está trabajando
+- **Proporcionar contexto adicional**: agregar información que Claude necesita sin esperar a que la solicite
+- **Construir interfaces de chat**: permitir que los usuarios envíen mensajes de seguimiento durante operaciones de larga duración
 
-Streaming input is ideal for conversational UIs where users interact with the agent throughout execution, not just at approval checkpoints.
+El input en streaming es ideal para interfaces conversacionales donde los usuarios interactúan con el agente a lo largo de toda la ejecución, no solo en los puntos de aprobación.
 
-### Custom tools
+### Herramientas personalizadas
 
-Use [custom tools](/docs/en/agent-sdk/custom-tools) when you need to:
+Usa [herramientas personalizadas](./Custom%20Tools.md) cuando necesites:
 
-- **Collect structured input**: build forms, wizards, or multi-step workflows that go beyond `AskUserQuestion`'s multiple-choice format
-- **Integrate external approval systems**: connect to existing ticketing, workflow, or approval platforms
-- **Implement domain-specific interactions**: create tools tailored to your application's needs, like code review interfaces or deployment checklists
+- **Recopilar input estructurado**: construir formularios, asistentes o flujos de trabajo de varios pasos que vayan más allá del formato de selección múltiple de `AskUserQuestion`
+- **Integrar sistemas de aprobación externos**: conectar con plataformas de tickets, flujos de trabajo o aprobación existentes
+- **Implementar interacciones específicas del dominio**: crear herramientas adaptadas a las necesidades de tu aplicación, como interfaces de revisión de código o checklists de despliegue
 
-Custom tools give you full control over the interaction, but require more implementation work than using the built-in `canUseTool` callback.
+Las herramientas personalizadas te dan control total sobre la interacción, pero requieren más trabajo de implementación que usar el callback integrado `canUseTool`.
 
-## Related resources
+## Recursos relacionados
 
-- [Configure permissions](/docs/en/agent-sdk/permissions): set up permission modes and rules
-- [Control execution with hooks](/docs/en/agent-sdk/hooks): run custom code at key points in the agent lifecycle
-- [TypeScript SDK reference](/docs/en/agent-sdk/typescript#can-use-tool): full canUseTool API documentation
+- [Configurar permisos](./Configure%20permissions.md): configurar modos y reglas de permisos
+- [Controlar la ejecución con hooks](./Intercept%20and%20control%20agent%20behavior%20with%20hooks.md): ejecutar código personalizado en puntos clave del ciclo de vida del agente
+- [Referencia del SDK de TypeScript](/docs/en/agent-sdk/typescript#can-use-tool): documentación completa de la API canUseTool

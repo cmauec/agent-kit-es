@@ -1,14 +1,14 @@
-# Custom Tools
+# Herramientas personalizadas
 
-Build and integrate custom tools to extend Claude Agent SDK functionality
+Crea e integra herramientas personalizadas para extender la funcionalidad del Claude Agent SDK
 
 ---
 
-Custom tools allow you to extend Claude Code's capabilities with your own functionality through in-process MCP servers, enabling Claude to interact with external services, APIs, or perform specialized operations.
+Las herramientas personalizadas te permiten extender las capacidades de Claude Code con tu propia funcionalidad a través de servidores MCP en proceso, lo que permite a Claude interactuar con servicios externos, APIs o realizar operaciones especializadas.
 
-## Creating Custom Tools
+## Crear herramientas personalizadas
 
-Use the `createSdkMcpServer` and `tool` helper functions to define type-safe custom tools:
+Usa las funciones auxiliares `createSdkMcpServer` y `tool` para definir herramientas personalizadas con seguridad de tipos:
 
 **TypeScript**
 ```typescript
@@ -91,21 +91,21 @@ custom_server = create_sdk_mcp_server(
 )
 ```
 
-## Using Custom Tools
+## Usar herramientas personalizadas
 
-Pass the custom server to the `query` function via the `mcpServers` option as a dictionary/object.
+Pasa el servidor personalizado a la función `query` mediante la opción `mcpServers` como un diccionario/objeto.
 
-> **Nota:** **Important:** Custom MCP tools require streaming input mode. You must use an async generator/iterable for the `prompt` parameter - a simple string will not work with MCP servers.
+> **Nota:** **Importante:** Las herramientas MCP personalizadas requieren el modo de entrada en streaming. Debes usar un generador asíncrono/iterable para el parámetro `prompt` — una cadena de texto simple no funcionará con servidores MCP.
 
-### Tool Name Format
+### Formato del nombre de las herramientas
 
-When MCP tools are exposed to Claude, their names follow a specific format:
-- Pattern: `mcp__{server_name}__{tool_name}`
-- Example: A tool named `get_weather` in server `my-custom-tools` becomes `mcp__my-custom-tools__get_weather`
+Cuando las herramientas MCP se exponen a Claude, sus nombres siguen un formato específico:
+- Patrón: `mcp__{server_name}__{tool_name}`
+- Ejemplo: Una herramienta llamada `get_weather` en el servidor `my-custom-tools` se convierte en `mcp__my-custom-tools__get_weather`
 
-### Configuring Allowed Tools
+### Configurar las herramientas permitidas
 
-You can control which tools Claude can use via the `allowedTools` option:
+Puedes controlar qué herramientas puede usar Claude mediante la opción `allowedTools`:
 
 **TypeScript**
 ```typescript
@@ -169,9 +169,9 @@ async def main():
 asyncio.run(main())
 ```
 
-### Multiple Tools Example
+### Ejemplo con múltiples herramientas
 
-When your MCP server has multiple tools, you can selectively allow them:
+Cuando tu servidor MCP tiene múltiples herramientas, puedes habilitarlas de forma selectiva:
 
 **TypeScript**
 ```typescript
@@ -305,9 +305,9 @@ async for message in query(
         print(message.result)
 ```
 
-## Type Safety with Python
+## Seguridad de tipos con Python
 
-The `@tool` decorator supports various schema definition approaches for type safety:
+El decorador `@tool` admite varios enfoques de definición de esquemas para garantizar la seguridad de tipos:
 
 **TypeScript**
 ```typescript
@@ -398,9 +398,9 @@ async def advanced_process(args: dict[str, Any]) -> dict[str, Any]:
     }
 ```
 
-## Error Handling
+## Manejo de errores
 
-Handle errors gracefully to provide meaningful feedback:
+Gestiona los errores con elegancia para proporcionar retroalimentación significativa:
 
 **TypeScript**
 ```typescript
@@ -483,9 +483,9 @@ async def fetch_data(args: dict[str, Any]) -> dict[str, Any]:
         }
 ```
 
-## Example Tools
+## Herramientas de ejemplo
 
-### Database Query Tool
+### Herramienta de consulta a base de datos
 
 **TypeScript**
 ```typescript
@@ -546,7 +546,7 @@ database_server = create_sdk_mcp_server(
 )
 ```
 
-### API Gateway Tool
+### Herramienta de API Gateway
 
 **TypeScript**
 ```typescript
@@ -674,7 +674,7 @@ api_gateway_server = create_sdk_mcp_server(
 )
 ```
 
-### Calculator Tool
+### Herramienta de calculadora
 
 **TypeScript**
 ```typescript
@@ -818,9 +818,9 @@ calculator_server = create_sdk_mcp_server(
 )
 ```
 
-## Related Documentation
+## Documentación relacionada
 
-- [TypeScript SDK Reference](/docs/en/agent-sdk/typescript)
-- [Python SDK Reference](/docs/en/agent-sdk/python)
-- [MCP Documentation](https://modelcontextprotocol.io)
-- [SDK Overview](/docs/en/agent-sdk/overview)
+- Referencia del SDK de TypeScript
+- Referencia del SDK de Python
+- [Documentación de MCP](https://modelcontextprotocol.io)
+- [Descripción general del SDK](../Agent%20SDK%20overview.md)

@@ -1,26 +1,26 @@
 # Plugins in the SDK
 
-Load custom plugins to extend Claude Code with commands, agents, skills, and hooks through the Agent SDK
+Carga plugins personalizados para extender Claude Code con comandos, agentes, skills y hooks a través del Agent SDK
 
 ---
 
-Plugins allow you to extend Claude Code with custom functionality that can be shared across projects. Through the Agent SDK, you can programmatically load plugins from local directories to add custom slash commands, agents, skills, hooks, and MCP servers to your agent sessions.
+Los plugins te permiten extender Claude Code con funcionalidad personalizada que puede compartirse entre proyectos. A través del Agent SDK, puedes cargar plugins programáticamente desde directorios locales para agregar comandos slash personalizados, agentes, skills, hooks y servidores MCP a tus sesiones de agente.
 
-## What are plugins?
+## ¿Qué son los plugins?
 
-Plugins are packages of Claude Code extensions that can include:
-- **Skills**: Model-invoked capabilities that Claude uses autonomously (can also be invoked with `/skill-name`)
-- **Agents**: Specialized subagents for specific tasks
-- **Hooks**: Event handlers that respond to tool use and other events
-- **MCP servers**: External tool integrations via Model Context Protocol
+Los plugins son paquetes de extensiones de Claude Code que pueden incluir:
+- **Skills**: Capacidades invocadas por el modelo que Claude usa de forma autónoma (también pueden invocarse con `/skill-name`)
+- **Agents**: Subagentes especializados para tareas específicas
+- **Hooks**: Manejadores de eventos que responden al uso de herramientas y otros eventos
+- **MCP servers**: Integraciones de herramientas externas a través del Model Context Protocol
 
-> **Nota:** The `commands/` directory is a legacy format. Use `skills/` for new plugins. Claude Code continues to support both formats for backward compatibility.
+> **Nota:** El directorio `commands/` es un formato heredado. Usa `skills/` para nuevos plugins. Claude Code sigue siendo compatible con ambos formatos por retrocompatibilidad.
 
-For complete information on plugin structure and how to create plugins, see [Plugins](https://code.claude.com/docs/en/plugins).
+Para información completa sobre la estructura de plugins y cómo crearlos, consulta [Plugins](https://code.claude.com/docs/en/plugins).
 
-## Loading plugins
+## Carga de plugins
 
-Load plugins by providing their local file system paths in your options configuration. The SDK supports loading multiple plugins from different locations.
+Carga plugins proporcionando sus rutas en el sistema de archivos local en tu configuración de opciones. El SDK admite cargar múltiples plugins desde diferentes ubicaciones.
 
 **TypeScript**
 ```typescript
@@ -62,17 +62,17 @@ async def main():
 asyncio.run(main())
 ```
 
-### Path specifications
+### Especificación de rutas
 
-Plugin paths can be:
-- **Relative paths**: Resolved relative to your current working directory (for example, `"./plugins/my-plugin"`)
-- **Absolute paths**: Full file system paths (for example, `"/home/user/plugins/my-plugin"`)
+Las rutas de los plugins pueden ser:
+- **Rutas relativas**: Se resuelven relativas a tu directorio de trabajo actual (por ejemplo, `"./plugins/my-plugin"`)
+- **Rutas absolutas**: Rutas completas en el sistema de archivos (por ejemplo, `"/home/user/plugins/my-plugin"`)
 
-> **Nota:** The path should point to the plugin's root directory (the directory containing `.claude-plugin/plugin.json`).
+> **Nota:** La ruta debe apuntar al directorio raíz del plugin (el directorio que contiene `.claude-plugin/plugin.json`).
 
-## Verifying plugin installation
+## Verificación de la instalación del plugin
 
-When plugins load successfully, they appear in the system initialization message. You can verify that your plugins are available:
+Cuando los plugins se cargan correctamente, aparecen en el mensaje de inicialización del sistema. Puedes verificar que tus plugins estén disponibles:
 
 **TypeScript**
 ```typescript
@@ -119,9 +119,9 @@ async def main():
 asyncio.run(main())
 ```
 
-## Using plugin skills
+## Uso de skills de plugins
 
-Skills from plugins are automatically namespaced with the plugin name to avoid conflicts. When invoked as slash commands, the format is `plugin-name:skill-name`.
+Las skills de los plugins se agrupan automáticamente bajo un espacio de nombres con el nombre del plugin para evitar conflictos. Cuando se invocan como comandos slash, el formato es `plugin-name:skill-name`.
 
 **TypeScript**
 ```typescript
@@ -163,11 +163,11 @@ async def main():
 asyncio.run(main())
 ```
 
-> **Nota:** If you installed a plugin via the CLI (for example, `/plugin install my-plugin@marketplace`), you can still use it in the SDK by providing its installation path. Check `~/.claude/plugins/` for CLI-installed plugins.
+> **Nota:** Si instalaste un plugin a través del CLI (por ejemplo, `/plugin install my-plugin@marketplace`), puedes seguir usándolo en el SDK proporcionando su ruta de instalación. Revisa `~/.claude/plugins/` para los plugins instalados con el CLI.
 
-## Complete example
+## Ejemplo completo
 
-Here's a full example demonstrating plugin loading and usage:
+A continuación se muestra un ejemplo completo que demuestra la carga y el uso de plugins:
 
 **TypeScript**
 ```typescript
@@ -243,9 +243,9 @@ if __name__ == "__main__":
     anyio.run(run_with_plugin)
 ```
 
-## Plugin structure reference
+## Referencia de estructura de plugins
 
-A plugin directory must contain a `.claude-plugin/plugin.json` manifest file. It can optionally include:
+Un directorio de plugin debe contener un archivo de manifiesto `.claude-plugin/plugin.json`. Opcionalmente puede incluir:
 
 ```text
 my-plugin/
@@ -263,31 +263,31 @@ my-plugin/
 └── .mcp.json                # MCP server definitions
 ```
 
-For detailed information on creating plugins, see:
-- [Plugins](https://code.claude.com/docs/en/plugins) - Complete plugin development guide
-- [Plugins reference](https://code.claude.com/docs/en/plugins-reference) - Technical specifications and schemas
+Para información detallada sobre la creación de plugins, consulta:
+- [Plugins](https://code.claude.com/docs/en/plugins) - Guía completa de desarrollo de plugins
+- [Plugins reference](https://code.claude.com/docs/en/plugins-reference) - Especificaciones técnicas y esquemas
 
-## Common use cases
+## Casos de uso comunes
 
-### Development and testing
+### Desarrollo y pruebas
 
-Load plugins during development without installing them globally:
+Carga plugins durante el desarrollo sin instalarlos globalmente:
 
 ```typescript
 plugins: [{ type: "local", path: "./dev-plugins/my-plugin" }];
 ```
 
-### Project-specific extensions
+### Extensiones específicas de proyecto
 
-Include plugins in your project repository for team-wide consistency:
+Incluye plugins en el repositorio de tu proyecto para consistencia en todo el equipo:
 
 ```typescript
 plugins: [{ type: "local", path: "./project-plugins/team-workflows" }];
 ```
 
-### Multiple plugin sources
+### Múltiples fuentes de plugins
 
-Combine plugins from different locations:
+Combina plugins de diferentes ubicaciones:
 
 ```typescript
 plugins: [
@@ -296,36 +296,36 @@ plugins: [
 ];
 ```
 
-## Troubleshooting
+## Solución de problemas
 
-### Plugin not loading
+### El plugin no se carga
 
-If your plugin doesn't appear in the init message:
+Si tu plugin no aparece en el mensaje de init:
 
-1. **Check the path**: Ensure the path points to the plugin root directory (containing `.claude-plugin/`)
-2. **Validate plugin.json**: Ensure your manifest file has valid JSON syntax
-3. **Check file permissions**: Ensure the plugin directory is readable
+1. **Verifica la ruta**: Asegúrate de que la ruta apunte al directorio raíz del plugin (que contiene `.claude-plugin/`)
+2. **Valida plugin.json**: Asegúrate de que tu archivo de manifiesto tenga sintaxis JSON válida
+3. **Verifica los permisos de archivo**: Asegúrate de que el directorio del plugin sea legible
 
-### Skills not appearing
+### Las skills no aparecen
 
-If plugin skills don't work:
+Si las skills del plugin no funcionan:
 
-1. **Use the namespace**: Plugin skills require the `plugin-name:skill-name` format when invoked as slash commands
-2. **Check init message**: Verify the skill appears in `slash_commands` with the correct namespace
-3. **Validate skill files**: Ensure each skill has a `SKILL.md` file in its own subdirectory under `skills/` (for example, `skills/my-skill/SKILL.md`)
+1. **Usa el espacio de nombres**: Las skills de plugins requieren el formato `plugin-name:skill-name` cuando se invocan como comandos slash
+2. **Revisa el mensaje de init**: Verifica que la skill aparezca en `slash_commands` con el espacio de nombres correcto
+3. **Valida los archivos de skill**: Asegúrate de que cada skill tenga un archivo `SKILL.md` en su propio subdirectorio dentro de `skills/` (por ejemplo, `skills/my-skill/SKILL.md`)
 
-### Path resolution issues
+### Problemas de resolución de rutas
 
-If relative paths don't work:
+Si las rutas relativas no funcionan:
 
-1. **Check working directory**: Relative paths are resolved from your current working directory
-2. **Use absolute paths**: For reliability, consider using absolute paths
-3. **Normalize paths**: Use path utilities to construct paths correctly
+1. **Verifica el directorio de trabajo**: Las rutas relativas se resuelven desde tu directorio de trabajo actual
+2. **Usa rutas absolutas**: Para mayor confiabilidad, considera usar rutas absolutas
+3. **Normaliza las rutas**: Usa utilidades de rutas para construir las rutas correctamente
 
-## See also
+## Ver también
 
-- [Plugins](https://code.claude.com/docs/en/plugins) - Complete plugin development guide
-- [Plugins reference](https://code.claude.com/docs/en/plugins-reference) - Technical specifications
-- [Slash Commands](/docs/en/agent-sdk/slash-commands) - Using slash commands in the SDK
-- [Subagents](/docs/en/agent-sdk/subagents) - Working with specialized agents
-- [Skills](/docs/en/agent-sdk/skills) - Using Agent Skills
+- [Plugins](https://code.claude.com/docs/en/plugins) - Guía completa de desarrollo de plugins
+- [Plugins reference](https://code.claude.com/docs/en/plugins-reference) - Especificaciones técnicas
+- [Slash Commands](./Slash%20Commands%20in%20the%20SDK.md) - Uso de comandos slash en el SDK
+- [Subagents](./Subagents%20in%20the%20SDK.md) - Trabajo con agentes especializados
+- [Skills](./Agent%20Skills%20in%20the%20SDK.md) - Uso de Agent Skills

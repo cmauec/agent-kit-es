@@ -1,16 +1,16 @@
-# Connect to external tools with MCP
+# Conectar con herramientas externas mediante MCP
 
-Configure MCP servers to extend your agent with external tools. Covers transport types, tool search for large tool sets, authentication, and error handling.
+Configura servidores MCP para ampliar tu agente con herramientas externas. Cubre tipos de transporte, búsqueda de herramientas para conjuntos grandes, autenticación y manejo de errores.
 
 ---
 
-The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) is an open standard for connecting AI agents to external tools and data sources. With MCP, your agent can query databases, integrate with APIs like Slack and GitHub, and connect to other services without writing custom tool implementations.
+El [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) es un estándar abierto para conectar agentes de IA con herramientas externas y fuentes de datos. Con MCP, tu agente puede consultar bases de datos, integrarse con APIs como Slack y GitHub, y conectarse a otros servicios sin necesidad de escribir implementaciones de herramientas personalizadas.
 
-MCP servers can run as local processes, connect over HTTP, or execute directly within your SDK application.
+Los servidores MCP pueden ejecutarse como procesos locales, conectarse mediante HTTP, o ejecutarse directamente dentro de tu aplicación SDK.
 
-## Quickstart
+## Inicio rápido
 
-This example connects to the [Claude Code documentation](https://code.claude.com/docs) MCP server using [HTTP transport](#httpsse-servers) and uses [`allowedTools`](#allow-mcp-tools) with a wildcard to permit all tools from the server.
+Este ejemplo se conecta al servidor MCP de la [documentación de Claude Code](https://code.claude.com/docs) usando [transporte HTTP](#httpsse-servers) y utiliza [`allowedTools`](#allow-mcp-tools) con un comodín para permitir todas las herramientas del servidor.
 
 **TypeScript**
 ```typescript
@@ -62,15 +62,15 @@ async def main():
 asyncio.run(main())
 ```
 
-The agent connects to the documentation server, searches for information about hooks, and returns the results.
+El agente se conecta al servidor de documentación, busca información sobre hooks y devuelve los resultados.
 
-## Add an MCP server
+## Agregar un servidor MCP
 
-You can configure MCP servers in code when calling `query()`, or in a `.mcp.json` file that the SDK loads automatically.
+Puedes configurar servidores MCP en código al llamar a `query()`, o en un archivo `.mcp.json` que el SDK carga automáticamente.
 
-### In code
+### En código
 
-Pass MCP servers directly in the `mcpServers` option:
+Pasa los servidores MCP directamente en la opción `mcpServers`:
 
 **TypeScript**
 ```typescript
@@ -123,9 +123,9 @@ async def main():
 asyncio.run(main())
 ```
 
-### From a config file
+### Desde un archivo de configuración
 
-Create a `.mcp.json` file at your project root. The SDK loads this automatically:
+Crea un archivo `.mcp.json` en la raíz de tu proyecto. El SDK lo carga automáticamente:
 
 ```json
 {
@@ -138,17 +138,17 @@ Create a `.mcp.json` file at your project root. The SDK loads this automatically
 }
 ```
 
-## Allow MCP tools
+## Permitir herramientas MCP
 
-MCP tools require explicit permission before Claude can use them. Without permission, Claude will see that tools are available but won't be able to call them.
+Las herramientas MCP requieren permiso explícito antes de que Claude pueda usarlas. Sin permiso, Claude verá que hay herramientas disponibles pero no podrá invocarlas.
 
-### Tool naming convention
+### Convención de nombres de herramientas
 
-MCP tools follow the naming pattern `mcp__<server-name>__<tool-name>`. For example, a GitHub server named `"github"` with a `list_issues` tool becomes `mcp__github__list_issues`.
+Las herramientas MCP siguen el patrón de nombres `mcp__<nombre-servidor>__<nombre-herramienta>`. Por ejemplo, un servidor GitHub llamado `"github"` con una herramienta `list_issues` se convierte en `mcp__github__list_issues`.
 
-### Grant access with allowedTools
+### Otorgar acceso con allowedTools
 
-Use `allowedTools` to specify which MCP tools Claude can use:
+Usa `allowedTools` para especificar qué herramientas MCP puede usar Claude:
 
 ```typescript hidelines={1,-1}
 const _ = {
@@ -165,14 +165,14 @@ const _ = {
 };
 ```
 
-Wildcards (`*`) let you allow all tools from a server without listing each one individually.
+Los comodines (`*`) permiten autorizar todas las herramientas de un servidor sin listar cada una individualmente.
 
-### Alternative: Change the permission mode
+### Alternativa: cambiar el modo de permisos
 
-Instead of listing allowed tools, you can change the permission mode to grant broader access:
+En lugar de listar las herramientas permitidas, puedes cambiar el modo de permisos para otorgar un acceso más amplio:
 
-- `permissionMode: "acceptEdits"`: Automatically approves tool usage (still prompts for destructive operations)
-- `permissionMode: "bypassPermissions"`: Skips all safety prompts, including for destructive operations like file deletion or running shell commands. Use with caution, especially in production. This mode propagates to subagents spawned by the Agent tool.
+- `permissionMode: "acceptEdits"`: aprueba automáticamente el uso de herramientas (aún solicita confirmación para operaciones destructivas)
+- `permissionMode: "bypassPermissions"`: omite todas las confirmaciones de seguridad, incluidas las de operaciones destructivas como eliminación de archivos o ejecución de comandos de shell. Úsalo con precaución, especialmente en producción. Este modo se propaga a los subagentes creados por la herramienta Agent.
 
 ```typescript hidelines={1,-1}
 const _ = {
@@ -185,11 +185,11 @@ const _ = {
 };
 ```
 
-See [Permissions](/docs/en/agent-sdk/permissions) for more details on permission modes.
+Consulta [Permissions](./Configure%20permissions.md) para más detalles sobre los modos de permisos.
 
-### Discover available tools
+### Descubrir las herramientas disponibles
 
-To see what tools an MCP server provides, check the server's documentation or connect to the server and inspect the `system` init message:
+Para ver qué herramientas ofrece un servidor MCP, consulta la documentación del servidor o conéctate a él e inspecciona el mensaje `system` init:
 
 ```typescript
 for await (const message of query({ prompt: "...", options })) {
@@ -199,19 +199,19 @@ for await (const message of query({ prompt: "...", options })) {
 }
 ```
 
-## Transport types
+## Tipos de transporte
 
-MCP servers communicate with your agent using different transport protocols. Check the server's documentation to see which transport it supports:
+Los servidores MCP se comunican con tu agente usando diferentes protocolos de transporte. Consulta la documentación del servidor para saber cuál soporta:
 
-- If the docs give you a **command to run** (like `npx @modelcontextprotocol/server-github`), use stdio
-- If the docs give you a **URL**, use HTTP or SSE
-- If you're building your own tools in code, use an SDK MCP server
+- Si la documentación te indica un **comando para ejecutar** (como `npx @modelcontextprotocol/server-github`), usa stdio
+- Si la documentación te proporciona una **URL**, usa HTTP o SSE
+- Si estás construyendo tus propias herramientas en código, usa un servidor MCP del SDK
 
-### stdio servers
+### Servidores stdio
 
-Local processes that communicate via stdin/stdout. Use this for MCP servers you run on the same machine:
+Procesos locales que se comunican mediante stdin/stdout. Úsalos para servidores MCP que ejecutas en la misma máquina:
 
-#### In code
+#### En código
 
 **TypeScript**
 ```typescript
@@ -261,11 +261,11 @@ options = ClaudeAgentOptions(
 }
 ```
 
-### HTTP/SSE servers
+### Servidores HTTP/SSE
 
-Use HTTP or SSE for cloud-hosted MCP servers and remote APIs:
+Usa HTTP o SSE para servidores MCP alojados en la nube y APIs remotas:
 
-#### In code
+#### En código
 
 **TypeScript**
 ```typescript
@@ -315,38 +315,38 @@ options = ClaudeAgentOptions(
 }
 ```
 
-For HTTP (non-streaming), use `"type": "http"` instead.
+Para HTTP (sin streaming), usa `"type": "http"` en su lugar.
 
-### SDK MCP servers
+### Servidores MCP del SDK
 
-Define custom tools directly in your application code instead of running a separate server process. See the [custom tools guide](/docs/en/agent-sdk/custom-tools) for implementation details.
+Define herramientas personalizadas directamente en el código de tu aplicación en lugar de ejecutar un proceso de servidor separado. Consulta la [guía de herramientas personalizadas](./Custom%20Tools.md) para detalles de implementación.
 
-## MCP tool search
+## Búsqueda de herramientas MCP
 
-When you have many MCP tools configured, tool definitions can consume a significant portion of your context window. MCP tool search solves this by dynamically loading tools on-demand instead of preloading all of them.
+Cuando tienes muchas herramientas MCP configuradas, las definiciones de herramientas pueden consumir una parte significativa de tu ventana de contexto. La búsqueda de herramientas MCP resuelve esto cargando herramientas de forma dinámica bajo demanda, en lugar de precargarlas todas.
 
-### How it works
+### Cómo funciona
 
-Tool search runs in auto mode by default. It activates when your MCP tool descriptions would consume more than 10% of the context window. When triggered:
+La búsqueda de herramientas se ejecuta en modo automático por defecto. Se activa cuando las descripciones de tus herramientas MCP consumirían más del 10% de la ventana de contexto. Cuando se activa:
 
-1. MCP tools are marked with `defer_loading: true` rather than loaded into context upfront
-2. Claude uses a search tool to discover relevant MCP tools when needed
-3. Only the tools Claude actually needs are loaded into context
+1. Las herramientas MCP se marcan con `defer_loading: true` en lugar de cargarse en el contexto de antemano
+2. Claude usa una herramienta de búsqueda para descubrir las herramientas MCP relevantes cuando las necesita
+3. Solo se cargan en el contexto las herramientas que Claude realmente necesita
 
-Tool search requires models that support `tool_reference` blocks: Sonnet 4 and later, or Opus 4 and later. Haiku models do not support tool search.
+La búsqueda de herramientas requiere modelos que soporten bloques `tool_reference`: Sonnet 4 y posteriores, u Opus 4 y posteriores. Los modelos Haiku no soportan la búsqueda de herramientas.
 
-### Configure tool search
+### Configurar la búsqueda de herramientas
 
-Control tool search behavior with the `ENABLE_TOOL_SEARCH` environment variable:
+Controla el comportamiento de la búsqueda de herramientas con la variable de entorno `ENABLE_TOOL_SEARCH`:
 
-| Value | Behavior |
+| Valor | Comportamiento |
 |:------|:---------|
-| `auto` | Activates when MCP tools exceed 10% of context (default) |
-| `auto:5` | Activates at 5% threshold (customize the percentage) |
-| `true` | Always enabled |
-| `false` | Disabled, all MCP tools loaded upfront |
+| `auto` | Se activa cuando las herramientas MCP superan el 10% del contexto (por defecto) |
+| `auto:5` | Se activa con un umbral del 5% (personalizable) |
+| `true` | Siempre habilitado |
+| `false` | Deshabilitado; todas las herramientas MCP se cargan de antemano |
 
-Set the value in the `env` option:
+Establece el valor en la opción `env`:
 
 **TypeScript**
 ```typescript
@@ -370,15 +370,15 @@ options = ClaudeAgentOptions(
 )
 ```
 
-## Authentication
+## Autenticación
 
-Most MCP servers require authentication to access external services. Pass credentials through environment variables in the server configuration.
+La mayoría de los servidores MCP requieren autenticación para acceder a servicios externos. Pasa las credenciales mediante variables de entorno en la configuración del servidor.
 
-### Pass credentials via environment variables
+### Pasar credenciales mediante variables de entorno
 
-Use the `env` field to pass API keys, tokens, and other credentials to the MCP server:
+Usa el campo `env` para pasar claves de API, tokens y otras credenciales al servidor MCP:
 
-#### In code
+#### En código
 
 **TypeScript**
 ```typescript
@@ -428,15 +428,15 @@ options = ClaudeAgentOptions(
 }
 ```
 
-The `${GITHUB_TOKEN}` syntax expands environment variables at runtime.
+La sintaxis `${GITHUB_TOKEN}` expande las variables de entorno en tiempo de ejecución.
 
-See [List issues from a repository](#list-issues-from-a-repository) for a complete working example with debug logging.
+Consulta [List issues from a repository](#list-issues-from-a-repository) para ver un ejemplo funcional completo con registro de depuración.
 
-### HTTP headers for remote servers
+### Cabeceras HTTP para servidores remotos
 
-For HTTP and SSE servers, pass authentication headers directly in the server configuration:
+Para servidores HTTP y SSE, pasa las cabeceras de autenticación directamente en la configuración del servidor:
 
-#### In code
+#### En código
 
 **TypeScript**
 ```typescript
@@ -486,11 +486,11 @@ options = ClaudeAgentOptions(
 }
 ```
 
-The `${API_TOKEN}` syntax expands environment variables at runtime.
+La sintaxis `${API_TOKEN}` expande las variables de entorno en tiempo de ejecución.
 
-### OAuth2 authentication
+### Autenticación OAuth2
 
-The [MCP specification supports OAuth 2.1](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization) for authorization. The SDK doesn't handle OAuth flows automatically, but you can pass access tokens via headers after completing the OAuth flow in your application:
+La [especificación MCP soporta OAuth 2.1](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization) para autorización. El SDK no gestiona los flujos OAuth de forma automática, pero puedes pasar tokens de acceso mediante cabeceras una vez completado el flujo OAuth en tu aplicación:
 
 **TypeScript**
 ```typescript
@@ -528,13 +528,13 @@ options = ClaudeAgentOptions(
 )
 ```
 
-## Examples
+## Ejemplos
 
-### List issues from a repository
+### Listar issues de un repositorio
 
-This example connects to the [GitHub MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/github) to list recent issues. The example includes debug logging to verify the MCP connection and tool calls.
+Este ejemplo se conecta al [servidor MCP de GitHub](https://github.com/modelcontextprotocol/servers/tree/main/src/github) para listar los issues recientes. El ejemplo incluye registro de depuración para verificar la conexión MCP y las llamadas a herramientas.
 
-Before running, create a [GitHub personal access token](https://github.com/settings/tokens) with `repo` scope and set it as an environment variable:
+Antes de ejecutarlo, crea un [token de acceso personal de GitHub](https://github.com/settings/tokens) con el scope `repo` y configúralo como variable de entorno:
 
 ```bash
 export GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
@@ -627,9 +627,9 @@ async def main():
 asyncio.run(main())
 ```
 
-### Query a database
+### Consultar una base de datos
 
-This example uses the [Postgres MCP server](https://github.com/modelcontextprotocol/servers/tree/main/src/postgres) to query a database. The connection string is passed as an argument to the server. The agent automatically discovers the database schema, writes the SQL query, and returns the results:
+Este ejemplo utiliza el [servidor MCP de Postgres](https://github.com/modelcontextprotocol/servers/tree/main/src/postgres) para consultar una base de datos. La cadena de conexión se pasa como argumento al servidor. El agente descubre automáticamente el esquema de la base de datos, escribe la consulta SQL y devuelve los resultados:
 
 **TypeScript**
 ```typescript
@@ -698,11 +698,11 @@ async def main():
 asyncio.run(main())
 ```
 
-## Error handling
+## Manejo de errores
 
-MCP servers can fail to connect for various reasons: the server process might not be installed, credentials might be invalid, or a remote server might be unreachable.
+Los servidores MCP pueden fallar al conectarse por diversas razones: el proceso del servidor puede no estar instalado, las credenciales pueden ser inválidas, o un servidor remoto puede ser inalcanzable.
 
-The SDK emits a `system` message with subtype `init` at the start of each query. This message includes the connection status for each MCP server. Check the `status` field to detect connection failures before the agent starts working:
+El SDK emite un mensaje `system` con subtipo `init` al inicio de cada consulta. Este mensaje incluye el estado de conexión de cada servidor MCP. Comprueba el campo `status` para detectar fallos de conexión antes de que el agente comience a trabajar:
 
 **TypeScript**
 ```typescript
@@ -760,11 +760,11 @@ async def main():
 asyncio.run(main())
 ```
 
-## Troubleshooting
+## Solución de problemas
 
-### Server shows "failed" status
+### El servidor muestra estado "failed"
 
-Check the `init` message to see which servers failed to connect:
+Comprueba el mensaje `init` para ver qué servidores fallaron al conectarse:
 
 ```typescript
 if (message.type === "system" && message.subtype === "init") {
@@ -776,16 +776,16 @@ if (message.type === "system" && message.subtype === "init") {
 }
 ```
 
-Common causes:
+Causas comunes:
 
-- **Missing environment variables**: Ensure required tokens and credentials are set. For stdio servers, check the `env` field matches what the server expects.
-- **Server not installed**: For `npx` commands, verify the package exists and Node.js is in your PATH.
-- **Invalid connection string**: For database servers, verify the connection string format and that the database is accessible.
-- **Network issues**: For remote HTTP/SSE servers, check the URL is reachable and any firewalls allow the connection.
+- **Variables de entorno faltantes**: asegúrate de que los tokens y credenciales requeridos estén configurados. Para servidores stdio, verifica que el campo `env` coincida con lo que espera el servidor.
+- **Servidor no instalado**: para comandos `npx`, verifica que el paquete exista y que Node.js esté en tu PATH.
+- **Cadena de conexión inválida**: para servidores de base de datos, verifica el formato de la cadena de conexión y que la base de datos sea accesible.
+- **Problemas de red**: para servidores remotos HTTP/SSE, comprueba que la URL sea alcanzable y que los cortafuegos permitan la conexión.
 
-### Tools not being called
+### Las herramientas no se invocan
 
-If Claude sees tools but doesn't use them, check that you've granted permission with `allowedTools` or by [changing the permission mode](#alternative-change-the-permission-mode):
+Si Claude ve las herramientas pero no las usa, verifica que hayas otorgado permiso con `allowedTools` o [cambiando el modo de permisos](#alternative-change-the-permission-mode):
 
 ```typescript hidelines={1,-1}
 const _ = {
@@ -798,18 +798,18 @@ const _ = {
 };
 ```
 
-### Connection timeouts
+### Tiempos de espera de conexión
 
-The MCP SDK has a default timeout of 60 seconds for server connections. If your server takes longer to start, the connection will fail. For servers that need more startup time, consider:
+El SDK de MCP tiene un tiempo de espera predeterminado de 60 segundos para las conexiones del servidor. Si tu servidor tarda más en arrancar, la conexión fallará. Para servidores que necesitan más tiempo de inicio, considera:
 
-- Using a lighter-weight server if available
-- Pre-warming the server before starting your agent
-- Checking server logs for slow initialization causes
+- Usar un servidor más ligero si está disponible
+- Pre-calentar el servidor antes de iniciar tu agente
+- Revisar los logs del servidor para identificar causas de inicialización lenta
 
-## Related resources
+## Recursos relacionados
 
-- **[Custom tools guide](/docs/en/agent-sdk/custom-tools)**: Build your own MCP server that runs in-process with your SDK application
-- **[Permissions](/docs/en/agent-sdk/permissions)**: Control which MCP tools your agent can use with `allowedTools` and `disallowedTools`
-- **[TypeScript SDK reference](/docs/en/agent-sdk/typescript)**: Full API reference including MCP configuration options
-- **[Python SDK reference](/docs/en/agent-sdk/python)**: Full API reference including MCP configuration options
-- **[MCP server directory](https://github.com/modelcontextprotocol/servers)**: Browse available MCP servers for databases, APIs, and more
+- **[Guía de herramientas personalizadas](./Custom%20Tools.md)**: construye tu propio servidor MCP que se ejecuta en el mismo proceso que tu aplicación SDK
+- **[Permissions](./Configure%20permissions.md)**: controla qué herramientas MCP puede usar tu agente con `allowedTools` y `disallowedTools`
+- **[Referencia del SDK TypeScript](/docs/en/agent-sdk/typescript)**: referencia completa de la API, incluidas las opciones de configuración MCP
+- **[Referencia del SDK Python](/docs/en/agent-sdk/python)**: referencia completa de la API, incluidas las opciones de configuración MCP
+- **[Directorio de servidores MCP](https://github.com/modelcontextprotocol/servers)**: explora los servidores MCP disponibles para bases de datos, APIs y más

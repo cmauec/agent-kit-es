@@ -1,30 +1,30 @@
 # Todo Lists
 
-Track and display todos using the Claude Agent SDK for organized task management
+Rastrea y muestra tareas pendientes usando el Claude Agent SDK para una gestión organizada de tareas
 
 ---
 
-Todo tracking provides a structured way to manage tasks and display progress to users. The Claude Agent SDK includes built-in todo functionality that helps organize complex workflows and keep users informed about task progression.
+El seguimiento de tareas (todos) proporciona una manera estructurada de gestionar tareas y mostrar el progreso a los usuarios. El Claude Agent SDK incluye funcionalidad de todos integrada que ayuda a organizar flujos de trabajo complejos y mantener a los usuarios informados sobre el avance de las tareas.
 
-### Todo Lifecycle
+### Ciclo de vida de un Todo
 
-Todos follow a predictable lifecycle:
-1. **Created** as `pending` when tasks are identified
-2. **Activated** to `in_progress` when work begins
-3. **Completed** when the task finishes successfully
-4. **Removed** when all tasks in a group are completed
+Los todos siguen un ciclo de vida predecible:
+1. **Creado** como `pending` cuando se identifican las tareas
+2. **Activado** a `in_progress` cuando comienza el trabajo
+3. **Completado** cuando la tarea finaliza exitosamente
+4. **Eliminado** cuando todas las tareas de un grupo se completan
 
-### When Todos Are Used
+### Cuándo se usan los Todos
 
-The SDK automatically creates todos for:
-- **Complex multi-step tasks** requiring 3 or more distinct actions
-- **User-provided task lists** when multiple items are mentioned
-- **Non-trivial operations** that benefit from progress tracking
-- **Explicit requests** when users ask for todo organization
+El SDK crea todos automáticamente para:
+- **Tareas complejas de múltiples pasos** que requieren 3 o más acciones distintas
+- **Listas de tareas proporcionadas por el usuario** cuando se mencionan múltiples elementos
+- **Operaciones no triviales** que se benefician del seguimiento de progreso
+- **Solicitudes explícitas** cuando los usuarios piden organización mediante todos
 
-## Examples
+## Ejemplos
 
-### Monitoring Todo Changes
+### Monitorear cambios en los Todos
 
 **TypeScript**
 ```typescript
@@ -34,7 +34,7 @@ for await (const message of query({
   prompt: "Optimize my React app performance and track progress with todos",
   options: { maxTurns: 15 }
 })) {
-  // Todo updates are reflected in the message stream
+  // Las actualizaciones de todos se reflejan en el flujo de mensajes
   if (message.type === "assistant") {
     for (const block of message.message.content) {
       if (block.type === "tool_use" && block.name === "TodoWrite") {
@@ -60,7 +60,7 @@ async for message in query(
     prompt="Optimize my React app performance and track progress with todos",
     options={"max_turns": 15},
 ):
-    # Todo updates are reflected in the message stream
+    # Las actualizaciones de todos se reflejan en el flujo de mensajes
     if isinstance(message, AssistantMessage):
         for block in message.content:
             if isinstance(block, ToolUseBlock) and block.name == "TodoWrite":
@@ -78,7 +78,7 @@ async for message in query(
                     print(f"{i + 1}. {status} {todo['content']}")
 ```
 
-### Real-time Progress Display
+### Visualización del progreso en tiempo real
 
 **TypeScript**
 ```typescript
@@ -122,7 +122,7 @@ class TodoTracker {
   }
 }
 
-// Usage
+// Uso
 const tracker = new TodoTracker();
 await tracker.trackQuery("Build a complete authentication system with todos");
 ```
@@ -172,14 +172,14 @@ class TodoTracker:
                         self.display_progress()
 
 
-# Usage
+# Uso
 tracker = TodoTracker()
 await tracker.track_query("Build a complete authentication system with todos")
 ```
 
-## Related Documentation
+## Documentación relacionada
 
 - [TypeScript SDK Reference](/docs/en/agent-sdk/typescript)
 - [Python SDK Reference](/docs/en/agent-sdk/python)
-- [Streaming vs Single Mode](/docs/en/agent-sdk/streaming-vs-single-mode)
-- [Custom Tools](/docs/en/agent-sdk/custom-tools)
+- [Streaming vs Single Mode](./Streaming%20Input.md)
+- [Custom Tools](./Custom%20Tools.md)

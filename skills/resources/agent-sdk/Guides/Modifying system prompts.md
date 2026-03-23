@@ -1,55 +1,55 @@
-# Modifying system prompts
+# Modificar system prompts
 
-Learn how to customize Claude's behavior by modifying system prompts using three approaches - output styles, systemPrompt with append, and custom system prompts.
+Aprende a personalizar el comportamiento de Claude modificando los system prompts mediante tres enfoques: output styles, systemPrompt con append y system prompts personalizados.
 
 ---
 
-System prompts define Claude's behavior, capabilities, and response style. The Claude Agent SDK provides three ways to customize system prompts: using output styles (persistent, file-based configurations), appending to Claude Code's prompt, or using a fully custom prompt.
+Los system prompts definen el comportamiento, las capacidades y el estilo de respuesta de Claude. El Claude Agent SDK ofrece tres formas de personalizar los system prompts: usando output styles (configuraciones persistentes basadas en archivos), añadiendo contenido al prompt de Claude Code, o usando un prompt completamente personalizado.
 
-## Understanding system prompts
+## Entendiendo los system prompts
 
-A system prompt is the initial instruction set that shapes how Claude behaves throughout a conversation.
+Un system prompt es el conjunto de instrucciones inicial que define cómo se comporta Claude a lo largo de una conversación.
 
-> **Nota:** **Default behavior:** The Agent SDK uses a **minimal system prompt** by default. It contains only essential tool instructions but omits Claude Code's coding guidelines, response style, and project context. To include the full Claude Code system prompt, specify `systemPrompt: { preset: "claude_code" }` in TypeScript or `system_prompt={"type": "preset", "preset": "claude_code"}` in Python.
+> **Nota:** **Comportamiento predeterminado:** El Agent SDK utiliza un **system prompt mínimo** por defecto. Solo contiene instrucciones esenciales para las herramientas, pero omite las directrices de codificación de Claude Code, el estilo de respuesta y el contexto del proyecto. Para incluir el system prompt completo de Claude Code, especifica `systemPrompt: { preset: "claude_code" }` en TypeScript o `system_prompt={"type": "preset", "preset": "claude_code"}` en Python.
 
-Claude Code's system prompt includes:
+El system prompt de Claude Code incluye:
 
-- Tool usage instructions and available tools
-- Code style and formatting guidelines
-- Response tone and verbosity settings
-- Security and safety instructions
-- Context about the current working directory and environment
+- Instrucciones de uso de herramientas y herramientas disponibles
+- Directrices de estilo y formato de código
+- Configuración del tono y nivel de detalle de las respuestas
+- Instrucciones de seguridad
+- Contexto sobre el directorio de trabajo actual y el entorno
 
-## Methods of modification
+## Métodos de modificación
 
-### Method 1: CLAUDE.md files (project-level instructions)
+### Método 1: Archivos CLAUDE.md (instrucciones a nivel de proyecto)
 
-CLAUDE.md files provide project-specific context and instructions that are automatically read by the Agent SDK when it runs in a directory. They serve as persistent "memory" for your project.
+Los archivos CLAUDE.md proporcionan contexto e instrucciones específicas del proyecto que el Agent SDK lee automáticamente cuando se ejecuta en un directorio. Sirven como "memoria" persistente para tu proyecto.
 
-#### How CLAUDE.md works with the SDK
+#### Cómo funciona CLAUDE.md con el SDK
 
-**Location and discovery:**
+**Ubicación y descubrimiento:**
 
-- **Project-level:** `CLAUDE.md` or `.claude/CLAUDE.md` in your working directory
-- **User-level:** `~/.claude/CLAUDE.md` for global instructions across all projects
+- **Nivel de proyecto:** `CLAUDE.md` o `.claude/CLAUDE.md` en tu directorio de trabajo
+- **Nivel de usuario:** `~/.claude/CLAUDE.md` para instrucciones globales aplicables a todos los proyectos
 
-**IMPORTANT:** The SDK only reads CLAUDE.md files when you explicitly configure `settingSources` (TypeScript) or `setting_sources` (Python):
+**IMPORTANTE:** El SDK solo lee los archivos CLAUDE.md cuando configuras explícitamente `settingSources` (TypeScript) o `setting_sources` (Python):
 
-- Include `'project'` to load project-level CLAUDE.md
-- Include `'user'` to load user-level CLAUDE.md (`~/.claude/CLAUDE.md`)
+- Incluye `'project'` para cargar el CLAUDE.md del proyecto
+- Incluye `'user'` para cargar el CLAUDE.md del usuario (`~/.claude/CLAUDE.md`)
 
-The `claude_code` system prompt preset does NOT automatically load CLAUDE.md - you must also specify setting sources.
+El preset `claude_code` del system prompt NO carga automáticamente CLAUDE.md; también debes especificar las fuentes de configuración.
 
-**Content format:**
-CLAUDE.md files use plain markdown and can contain:
+**Formato del contenido:**
+Los archivos CLAUDE.md usan markdown simple y pueden contener:
 
-- Coding guidelines and standards
-- Project-specific context
-- Common commands or workflows
-- API conventions
-- Testing requirements
+- Directrices y estándares de codificación
+- Contexto específico del proyecto
+- Comandos o flujos de trabajo habituales
+- Convenciones de API
+- Requisitos de pruebas
 
-#### Example CLAUDE.md
+#### Ejemplo de CLAUDE.md
 
 ```markdown
 # Project Guidelines
@@ -73,7 +73,7 @@ CLAUDE.md files use plain markdown and can contain:
 - Type check: `npm run typecheck`
 ```
 
-#### Using CLAUDE.md with the SDK
+#### Usar CLAUDE.md con el SDK
 
 **TypeScript**
 ```typescript
@@ -122,28 +122,28 @@ async for message in query(
 # Now Claude has access to your project guidelines from CLAUDE.md
 ```
 
-#### When to use CLAUDE.md
+#### Cuándo usar CLAUDE.md
 
-**Best for:**
+**Ideal para:**
 
-- **Team-shared context** - Guidelines everyone should follow
-- **Project conventions** - Coding standards, file structure, naming patterns
-- **Common commands** - Build, test, deploy commands specific to your project
-- **Long-term memory** - Context that should persist across all sessions
-- **Version-controlled instructions** - Commit to git so the team stays in sync
+- **Contexto compartido con el equipo** - Directrices que todos deberían seguir
+- **Convenciones del proyecto** - Estándares de codificación, estructura de archivos, patrones de nomenclatura
+- **Comandos habituales** - Comandos de build, pruebas y despliegue específicos del proyecto
+- **Memoria a largo plazo** - Contexto que debe persistir en todas las sesiones
+- **Instrucciones versionadas** - Commiteadas en git para que el equipo esté sincronizado
 
-**Key characteristics:**
+**Características clave:**
 
-- ✅ Persistent across all sessions in a project
-- ✅ Shared with team via git
-- ✅ Automatic discovery (no code changes needed)
-- ⚠️ Requires loading settings via `settingSources`
+- Persistente en todas las sesiones de un proyecto
+- Compartida con el equipo vía git
+- Descubrimiento automático (sin cambios en el código)
+- Requiere cargar la configuración mediante `settingSources`
 
-### Method 2: Output styles (persistent configurations)
+### Método 2: Output styles (configuraciones persistentes)
 
-Output styles are saved configurations that modify Claude's system prompt. They're stored as markdown files and can be reused across sessions and projects.
+Los output styles son configuraciones guardadas que modifican el system prompt de Claude. Se almacenan como archivos markdown y pueden reutilizarse entre sesiones y proyectos.
 
-#### Creating an output style
+#### Crear un output style
 
 **TypeScript**
 ```typescript
@@ -221,19 +221,19 @@ For every code submission:
 )
 ```
 
-#### Using output styles
+#### Usar output styles
 
-Once created, activate output styles via:
+Una vez creados, activa los output styles mediante:
 
 - **CLI**: `/output-style [style-name]`
 - **Settings**: `.claude/settings.local.json`
-- **Create new**: `/output-style:new [description]`
+- **Crear nuevo**: `/output-style:new [description]`
 
-**Note for SDK users:** Output styles are loaded when you include `settingSources: ['user']` or `settingSources: ['project']` (TypeScript) / `setting_sources=["user"]` or `setting_sources=["project"]` (Python) in your options.
+**Nota para usuarios del SDK:** Los output styles se cargan cuando incluyes `settingSources: ['user']` o `settingSources: ['project']` (TypeScript) / `setting_sources=["user"]` o `setting_sources=["project"]` (Python) en tus opciones.
 
-### Method 3: Using `systemPrompt` with append
+### Método 3: Usar `systemPrompt` con append
 
-You can use the Claude Code preset with an `append` property to add your custom instructions while preserving all built-in functionality.
+Puedes usar el preset de Claude Code con una propiedad `append` para añadir tus instrucciones personalizadas preservando toda la funcionalidad integrada.
 
 **TypeScript**
 ```typescript
@@ -279,9 +279,9 @@ async for message in query(
         print(message.message.content)
 ```
 
-### Method 4: Custom system prompts
+### Método 4: System prompts personalizados
 
-You can provide a custom string as `systemPrompt` to replace the default entirely with your own instructions.
+Puedes proporcionar una cadena de texto personalizada como `systemPrompt` para reemplazar completamente el prompt predeterminado con tus propias instrucciones.
 
 **TypeScript**
 ```typescript
@@ -333,82 +333,82 @@ async for message in query(
         print(message.message.content)
 ```
 
-## Comparison of all four approaches
+## Comparación de los cuatro enfoques
 
-| Feature                 | CLAUDE.md           | Output Styles      | `systemPrompt` with append | Custom `systemPrompt`     |
-| ----------------------- | ------------------- | ------------------ | -------------------------- | ------------------------- |
-| **Persistence**         | Per-project file | Saved as files  | Session only            | Session only           |
-| **Reusability**         | Per-project      | Across projects | Code duplication        | Code duplication       |
-| **Management**          | On filesystem    | CLI + files     | In code                 | In code                |
-| **Default tools**       | Preserved        | Preserved       | Preserved               | Lost (unless included) |
-| **Built-in safety**     | Maintained       | Maintained      | Maintained              | Must be added          |
-| **Environment context** | Automatic        | Automatic       | Automatic               | Must be provided       |
-| **Customization level** | Additions only   | Replace default | Additions only          | Complete control       |
-| **Version control**     | With project     | Yes             | With code               | With code              |
-| **Scope**               | Project-specific | User or project | Code session            | Code session           |
+| Característica          | CLAUDE.md              | Output Styles          | `systemPrompt` con append  | `systemPrompt` personalizado |
+| ----------------------- | ---------------------- | ---------------------- | -------------------------- | ---------------------------- |
+| **Persistencia**        | Archivo por proyecto   | Guardado como archivos | Solo sesión                | Solo sesión                  |
+| **Reutilización**       | Por proyecto           | Entre proyectos        | Duplicación en código      | Duplicación en código        |
+| **Gestión**             | En el sistema de archivos | CLI + archivos      | En el código               | En el código                 |
+| **Herramientas predeterminadas** | Preservadas | Preservadas            | Preservadas                | Perdidas (salvo que se incluyan) |
+| **Seguridad integrada** | Mantenida              | Mantenida              | Mantenida                  | Debe añadirse                |
+| **Contexto del entorno** | Automático            | Automático             | Automático                 | Debe proporcionarse          |
+| **Nivel de personalización** | Solo adiciones   | Reemplaza el predeterminado | Solo adiciones        | Control total                |
+| **Control de versiones** | Con el proyecto       | Sí                     | Con el código              | Con el código                |
+| **Alcance**             | Específico del proyecto | Usuario o proyecto    | Sesión de código           | Sesión de código             |
 
-**Note:** "With append" means using `systemPrompt: { type: "preset", preset: "claude_code", append: "..." }` in TypeScript or `system_prompt={"type": "preset", "preset": "claude_code", "append": "..."}` in Python.
+**Nota:** "Con append" significa usar `systemPrompt: { type: "preset", preset: "claude_code", append: "..." }` en TypeScript o `system_prompt={"type": "preset", "preset": "claude_code", "append": "..."}` en Python.
 
-## Use cases and best practices
+## Casos de uso y buenas prácticas
 
-### When to use CLAUDE.md
+### Cuándo usar CLAUDE.md
 
-**Best for:**
+**Ideal para:**
 
-- Project-specific coding standards and conventions
-- Documenting project structure and architecture
-- Listing common commands (build, test, deploy)
-- Team-shared context that should be version controlled
-- Instructions that apply to all SDK usage in a project
+- Estándares y convenciones de codificación específicos del proyecto
+- Documentar la estructura y arquitectura del proyecto
+- Listar comandos habituales (build, test, deploy)
+- Contexto compartido con el equipo que debe estar bajo control de versiones
+- Instrucciones que aplican a todo el uso del SDK en un proyecto
 
-**Examples:**
+**Ejemplos:**
 
-- "All API endpoints should use async/await patterns"
-- "Run `npm run lint:fix` before committing"
-- "Database migrations are in the `migrations/` directory"
+- "Todos los endpoints de API deben usar patrones async/await"
+- "Ejecutar `npm run lint:fix` antes de commitear"
+- "Las migraciones de base de datos están en el directorio `migrations/`"
 
-**Important:** To load CLAUDE.md files, you must explicitly set `settingSources: ['project']` (TypeScript) or `setting_sources=["project"]` (Python). The `claude_code` system prompt preset does NOT automatically load CLAUDE.md without this setting.
+**Importante:** Para cargar los archivos CLAUDE.md, debes configurar explícitamente `settingSources: ['project']` (TypeScript) o `setting_sources=["project"]` (Python). El preset `claude_code` del system prompt NO carga automáticamente CLAUDE.md sin esta configuración.
 
-### When to use output styles
+### Cuándo usar output styles
 
-**Best for:**
+**Ideal para:**
 
-- Persistent behavior changes across sessions
-- Team-shared configurations
-- Specialized assistants (code reviewer, data scientist, DevOps)
-- Complex prompt modifications that need versioning
+- Cambios de comportamiento persistentes entre sesiones
+- Configuraciones compartidas con el equipo
+- Asistentes especializados (revisor de código, científico de datos, DevOps)
+- Modificaciones complejas del prompt que necesitan versionado
 
-**Examples:**
+**Ejemplos:**
 
-- Creating a dedicated SQL optimization assistant
-- Building a security-focused code reviewer
-- Developing a teaching assistant with specific pedagogy
+- Crear un asistente dedicado a la optimización de SQL
+- Construir un revisor de código enfocado en seguridad
+- Desarrollar un asistente de enseñanza con una pedagogía específica
 
-### When to use `systemPrompt` with append
+### Cuándo usar `systemPrompt` con append
 
-**Best for:**
+**Ideal para:**
 
-- Adding specific coding standards or preferences
-- Customizing output formatting
-- Adding domain-specific knowledge
-- Modifying response verbosity
-- Enhancing Claude Code's default behavior without losing tool instructions
+- Añadir estándares de codificación o preferencias específicas
+- Personalizar el formato de la salida
+- Añadir conocimiento específico del dominio
+- Modificar el nivel de detalle de las respuestas
+- Mejorar el comportamiento predeterminado de Claude Code sin perder las instrucciones de herramientas
 
-### When to use custom `systemPrompt`
+### Cuándo usar `systemPrompt` personalizado
 
-**Best for:**
+**Ideal para:**
 
-- Complete control over Claude's behavior
-- Specialized single-session tasks
-- Testing new prompt strategies
-- Situations where default tools aren't needed
-- Building specialized agents with unique behavior
+- Control total sobre el comportamiento de Claude
+- Tareas especializadas de una sola sesión
+- Probar nuevas estrategias de prompt
+- Situaciones en las que no se necesitan las herramientas predeterminadas
+- Construir agentes especializados con comportamiento único
 
-## Combining approaches
+## Combinar enfoques
 
-You can combine these methods for maximum flexibility:
+Puedes combinar estos métodos para obtener la máxima flexibilidad:
 
-### Example: Output style with session-specific additions
+### Ejemplo: Output style con adiciones específicas de sesión
 
 **TypeScript**
 ```typescript
@@ -463,8 +463,8 @@ async for message in query(
     messages.append(message)
 ```
 
-## See also
+## Ver también
 
-- [Output styles](https://code.claude.com/docs/en/output-styles) - Complete output styles documentation
-- [TypeScript SDK guide](/docs/en/agent-sdk/typescript) - Complete SDK usage guide
-- [Configuration guide](https://code.claude.com/docs/en/settings) - General configuration options
+- [Output styles](https://code.claude.com/docs/en/output-styles) - Documentación completa de output styles
+- TypeScript SDK guide - Guía completa de uso del SDK
+- [Configuration guide](https://code.claude.com/docs/en/settings) - Opciones generales de configuración

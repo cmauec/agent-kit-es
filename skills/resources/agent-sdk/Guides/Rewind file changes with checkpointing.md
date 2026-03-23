@@ -1,46 +1,46 @@
 # Rewind file changes with checkpointing
 
-Track file changes during agent sessions and restore files to any previous state
+Rastrea los cambios de archivos durante las sesiones del agente y restaura archivos a cualquier estado anterior
 
 ---
 
-File checkpointing tracks file modifications made through the Write, Edit, and NotebookEdit tools during an agent session, allowing you to rewind files to any previous state. Want to try it out? Jump to the [interactive example](#try-it-out).
+El sistema de checkpointing de archivos rastrea las modificaciones realizadas a través de las herramientas Write, Edit y NotebookEdit durante una sesión del agente, permitiéndote volver los archivos a cualquier estado anterior. ¿Quieres probarlo? Salta al [ejemplo interactivo](#try-it-out).
 
-With checkpointing, you can:
+Con el checkpointing puedes:
 
-- **Undo unwanted changes** by restoring files to a known good state
-- **Explore alternatives** by restoring to a checkpoint and trying a different approach
-- **Recover from errors** when the agent makes incorrect modifications
+- **Deshacer cambios no deseados** restaurando archivos a un estado conocido y funcional
+- **Explorar alternativas** restaurando a un checkpoint e intentando un enfoque diferente
+- **Recuperarte de errores** cuando el agente realiza modificaciones incorrectas
 
-> **Advertencia:** Only changes made through the Write, Edit, and NotebookEdit tools are tracked. Changes made through Bash commands (like `echo > file.txt` or `sed -i`) are not captured by the checkpoint system.
+> **Advertencia:** Solo se rastrean los cambios realizados a través de las herramientas Write, Edit y NotebookEdit. Los cambios realizados mediante comandos Bash (como `echo > file.txt` o `sed -i`) no son capturados por el sistema de checkpointing.
 
-## How checkpointing works
+## Cómo funciona el checkpointing
 
-When you enable file checkpointing, the SDK creates backups of files before modifying them through the Write, Edit, or NotebookEdit tools. User messages in the response stream include a checkpoint UUID that you can use as a restore point.
+Cuando habilitas el checkpointing de archivos, el SDK crea copias de respaldo de los archivos antes de modificarlos mediante las herramientas Write, Edit o NotebookEdit. Los mensajes de usuario en el flujo de respuesta incluyen un UUID de checkpoint que puedes usar como punto de restauración.
 
-Checkpoint works with these built-in tools that the agent uses to modify files:
+El checkpointing funciona con estas herramientas integradas que el agente usa para modificar archivos:
 
-| Tool | Description |
-|------|-------------|
-| Write | Creates a new file or overwrites an existing file with new content |
-| Edit | Makes targeted edits to specific parts of an existing file |
-| NotebookEdit | Modifies cells in Jupyter notebooks (`.ipynb` files) |
+| Herramienta | Descripción |
+|-------------|-------------|
+| Write | Crea un nuevo archivo o sobrescribe uno existente con nuevo contenido |
+| Edit | Realiza ediciones específicas en partes concretas de un archivo existente |
+| NotebookEdit | Modifica celdas en notebooks de Jupyter (archivos `.ipynb`) |
 
-> **Nota:** File rewinding restores files on disk to a previous state. It does not rewind the conversation itself. The conversation history and context remain intact after calling `rewindFiles()` (TypeScript) or `rewind_files()` (Python).
+> **Nota:** Revertir archivos restaura los archivos en disco a un estado anterior. No revierte la conversación en sí. El historial y el contexto de la conversación permanecen intactos después de llamar a `rewindFiles()` (TypeScript) o `rewind_files()` (Python).
 
-The checkpoint system tracks:
+El sistema de checkpointing rastrea:
 
-- Files created during the session
-- Files modified during the session
-- The original content of modified files
+- Archivos creados durante la sesión
+- Archivos modificados durante la sesión
+- El contenido original de los archivos modificados
 
-When you rewind to a checkpoint, created files are deleted and modified files are restored to their content at that point.
+Cuando vuelves a un checkpoint, los archivos creados se eliminan y los archivos modificados se restauran a su contenido en ese momento.
 
-## Implement checkpointing
+## Implementar el checkpointing
 
-To use file checkpointing, enable it in your options, capture checkpoint UUIDs from the response stream, then call `rewindFiles()` (TypeScript) or `rewind_files()` (Python) when you need to restore.
+Para usar el checkpointing de archivos, actívalo en tus opciones, captura los UUIDs de checkpoint del flujo de respuesta y luego llama a `rewindFiles()` (TypeScript) o `rewind_files()` (Python) cuando necesites restaurar.
 
-The following example shows the complete flow: enable checkpointing, capture the checkpoint UUID and session ID from the response stream, then resume the session later to rewind files. Each step is explained in detail below.
+El siguiente ejemplo muestra el flujo completo: habilitar el checkpointing, capturar el UUID del checkpoint y el ID de sesión del flujo de respuesta, y luego reanudar la sesión más tarde para revertir los archivos. Cada paso se explica en detalle a continuación.
 
 **Python**
 ```python
@@ -140,14 +140,14 @@ async function main() {
 main();
 ```
 
-### 1. Enable checkpointing
+### 1. Habilitar el checkpointing
 
-Configure your SDK options to enable checkpointing and receive checkpoint UUIDs:
+Configura las opciones del SDK para habilitar el checkpointing y recibir los UUIDs de checkpoint:
 
-| Option | Python | TypeScript | Description |
+| Opción | Python | TypeScript | Descripción |
 |--------|--------|------------|-------------|
-| Enable checkpointing | `enable_file_checkpointing=True` | `enableFileCheckpointing: true` | Tracks file changes for rewinding |
-| Receive checkpoint UUIDs | `extra_args={"replay-user-messages": None}` | `extraArgs: { 'replay-user-messages': null }` | Required to get user message UUIDs in the stream |
+| Habilitar checkpointing | `enable_file_checkpointing=True` | `enableFileCheckpointing: true` | Rastrea los cambios de archivos para poder revertirlos |
+| Recibir UUIDs de checkpoint | `extra_args={"replay-user-messages": None}` | `extraArgs: { 'replay-user-messages': null }` | Necesario para obtener los UUIDs de mensajes de usuario en el flujo |
 
 **Python**
 ```python
@@ -173,13 +173,13 @@ const response = query({
 });
 ```
 
-### 2. Capture checkpoint UUID and session ID
+### 2. Capturar el UUID del checkpoint y el ID de sesión
 
-With the `replay-user-messages` option set (shown above), each user message in the response stream has a UUID that serves as a checkpoint.
+Con la opción `replay-user-messages` activada (mostrada arriba), cada mensaje de usuario en el flujo de respuesta tiene un UUID que sirve como checkpoint.
 
-For most use cases, capture the first user message UUID (`message.uuid`); rewinding to it restores all files to their original state. To store multiple checkpoints and rewind to intermediate states, see [Multiple restore points](#multiple-restore-points).
+Para la mayoría de los casos de uso, captura el UUID del primer mensaje de usuario (`message.uuid`); revertir a él restaura todos los archivos a su estado original. Para almacenar múltiples checkpoints y revertir a estados intermedios, consulta [Múltiples puntos de restauración](#multiple-restore-points).
 
-Capturing the session ID (`message.session_id`) is optional; you only need it if you want to rewind later, after the stream completes. If you're calling `rewindFiles()` immediately while still processing messages (as the example in [Checkpoint before risky operations](#checkpoint-before-risky-operations) does), you can skip capturing the session ID.
+Capturar el ID de sesión (`message.session_id`) es opcional; solo lo necesitas si quieres revertir más tarde, después de que el flujo se complete. Si llamas a `rewindFiles()` inmediatamente mientras aún procesas mensajes (como hace el ejemplo en [Checkpoint antes de operaciones arriesgadas](#checkpoint-before-risky-operations)), puedes omitir la captura del ID de sesión.
 
 **Python**
 ```python
@@ -212,9 +212,9 @@ for await (const message of response) {
 }
 ```
 
-### 3. Rewind files
+### 3. Revertir archivos
 
-To rewind after the stream completes, resume the session with an empty prompt and call `rewind_files()` (Python) or `rewindFiles()` (TypeScript) with your checkpoint UUID. You can also rewind during the stream; see [Checkpoint before risky operations](#checkpoint-before-risky-operations) for that pattern.
+Para revertir después de que el flujo se complete, reanuda la sesión con un prompt vacío y llama a `rewind_files()` (Python) o `rewindFiles()` (TypeScript) con tu UUID de checkpoint. También puedes revertir durante el flujo; consulta [Checkpoint antes de operaciones arriesgadas](#checkpoint-before-risky-operations) para ese patrón.
 
 **Python**
 ```python
@@ -240,19 +240,19 @@ for await (const msg of rewindQuery) {
 }
 ```
 
-If you capture the session ID and checkpoint ID, you can also rewind from the CLI:
+Si capturas el ID de sesión y el ID de checkpoint, también puedes revertir desde la CLI:
 
 ```bash
 claude --resume <session-id> --rewind-files <checkpoint-uuid>
 ```
 
-## Common patterns
+## Patrones comunes
 
-These patterns show different ways to capture and use checkpoint UUIDs depending on your use case.
+Estos patrones muestran distintas formas de capturar y usar los UUIDs de checkpoint según tu caso de uso.
 
-### Checkpoint before risky operations
+### Checkpoint antes de operaciones arriesgadas
 
-This pattern keeps only the most recent checkpoint UUID, updating it before each agent turn. If something goes wrong during processing, you can immediately rewind to the last safe state and break out of the loop.
+Este patrón conserva únicamente el UUID del checkpoint más reciente, actualizándolo antes de cada turno del agente. Si algo sale mal durante el procesamiento, puedes revertir inmediatamente al último estado seguro y salir del bucle.
 
 **Python**
 ```python
@@ -325,11 +325,11 @@ async function main() {
 main();
 ```
 
-### Multiple restore points
+### Múltiples puntos de restauración
 
-If Claude makes changes across multiple turns, you might want to rewind to a specific point rather than all the way back. For example, if Claude refactors a file in turn one and adds tests in turn two, you might want to keep the refactor but undo the tests.
+Si Claude realiza cambios a lo largo de varios turnos, puede que quieras revertir a un punto específico en lugar de ir todo el camino de vuelta. Por ejemplo, si Claude refactoriza un archivo en el turno uno y agrega pruebas en el turno dos, puede que quieras conservar la refactorización pero deshacer las pruebas.
 
-This pattern stores all checkpoint UUIDs in an array with metadata. After the session completes, you can rewind to any previous checkpoint:
+Este patrón almacena todos los UUIDs de checkpoint en un array con metadatos. Una vez completada la sesión, puedes revertir a cualquier checkpoint anterior:
 
 **Python**
 ```python
@@ -453,13 +453,13 @@ main();
 
 ## Try it out
 
-This complete example creates a small utility file, has the agent add documentation comments, shows you the changes, then asks if you want to rewind.
+Este ejemplo completo crea un pequeño archivo de utilidades, hace que el agente agregue comentarios de documentación, te muestra los cambios y luego te pregunta si quieres revertir.
 
-Before you begin, make sure you have the [Claude Agent SDK installed](/docs/en/agent-sdk/quickstart).
+Antes de comenzar, asegúrate de tener el [Claude Agent SDK instalado](../Quickstart.md).
 
-### 1. Create a test file
+### 1. Crear un archivo de prueba
 
-Create a new file called `utils.py` (Python) or `utils.ts` (TypeScript) and paste the following code:
+Crea un nuevo archivo llamado `utils.py` (Python) o `utils.ts` (TypeScript) y pega el siguiente código:
 
 **utils.py**
 ```python
@@ -503,11 +503,11 @@ export function divide(a: number, b: number): number {
 }
 ```
 
-### 2. Run the interactive example
+### 2. Ejecutar el ejemplo interactivo
 
-Create a new file called `try_checkpointing.py` (Python) or `try_checkpointing.ts` (TypeScript) in the same directory as your utility file, and paste the following code.
+Crea un nuevo archivo llamado `try_checkpointing.py` (Python) o `try_checkpointing.ts` (TypeScript) en el mismo directorio que tu archivo de utilidades y pega el siguiente código.
 
-This script asks Claude to add doc comments to your utility file, then gives you the option to rewind and restore the original.
+Este script le pide a Claude que agregue comentarios de documentación a tu archivo de utilidades y luego te da la opción de revertir y restaurar el original.
 
 **try_checkpointing.py**
 ```python
@@ -648,18 +648,18 @@ async function main() {
 main();
 ```
 
-This example demonstrates the complete checkpointing workflow:
+Este ejemplo demuestra el flujo completo de checkpointing:
 
-1. **Enable checkpointing**: configure the SDK with `enable_file_checkpointing=True` and `permission_mode="acceptEdits"` to auto-approve file edits
-2. **Capture checkpoint data**: as the agent runs, store the first user message UUID (your restore point) and the session ID
-3. **Prompt for rewind**: after the agent finishes, check your utility file to see the doc comments, then decide if you want to undo the changes
-4. **Resume and rewind**: if yes, resume the session with an empty prompt and call `rewind_files()` to restore the original file
+1. **Habilitar el checkpointing**: configura el SDK con `enable_file_checkpointing=True` y `permission_mode="acceptEdits"` para aprobar automáticamente las ediciones de archivos
+2. **Capturar los datos del checkpoint**: mientras el agente se ejecuta, almacena el UUID del primer mensaje de usuario (tu punto de restauración) y el ID de sesión
+3. **Preguntar por la reversión**: después de que el agente termine, revisa tu archivo de utilidades para ver los comentarios de documentación y decide si quieres deshacer los cambios
+4. **Reanudar y revertir**: si es así, reanuda la sesión con un prompt vacío y llama a `rewind_files()` para restaurar el archivo original
 
-### 3. Run the example
+### 3. Ejecutar el ejemplo
 
-Run the script from the same directory as your utility file.
+Ejecuta el script desde el mismo directorio que tu archivo de utilidades.
 
-> **Tip:** Open your utility file (`utils.py` or `utils.ts`) in your IDE or editor before running the script. You'll see the file update in real-time as the agent adds doc comments, then revert back to the original when you choose to rewind.
+> **Consejo:** Abre tu archivo de utilidades (`utils.py` o `utils.ts`) en tu IDE o editor antes de ejecutar el script. Verás cómo el archivo se actualiza en tiempo real mientras el agente agrega los comentarios de documentación y cómo vuelve al original cuando eliges revertir.
 
 #### Python
 
@@ -673,52 +673,52 @@ python try_checkpointing.py
 npx tsx try_checkpointing.ts
 ```
 
-You'll see the agent add doc comments, then a prompt asking if you want to rewind. If you choose yes, the file is restored to its original state.
+Verás cómo el agente agrega los comentarios de documentación y luego aparecerá un prompt preguntando si quieres revertir. Si eliges que sí, el archivo se restaura a su estado original.
 
-## Limitations
+## Limitaciones
 
-File checkpointing has the following limitations:
+El checkpointing de archivos tiene las siguientes limitaciones:
 
-| Limitation | Description |
+| Limitación | Descripción |
 |------------|-------------|
-| Write/Edit/NotebookEdit tools only | Changes made through Bash commands are not tracked |
-| Same session | Checkpoints are tied to the session that created them |
-| File content only | Creating, moving, or deleting directories is not undone by rewinding |
-| Local files | Remote or network files are not tracked |
+| Solo herramientas Write/Edit/NotebookEdit | Los cambios realizados mediante comandos Bash no se rastrean |
+| Misma sesión | Los checkpoints están vinculados a la sesión que los creó |
+| Solo contenido de archivos | Crear, mover o eliminar directorios no se deshace al revertir |
+| Archivos locales | Los archivos remotos o de red no se rastrean |
 
-## Troubleshooting
+## Solución de problemas
 
-### Checkpointing options not recognized
+### Las opciones de checkpointing no se reconocen
 
-If `enableFileCheckpointing` or `rewindFiles()` isn't available, you may be on an older SDK version.
+Si `enableFileCheckpointing` o `rewindFiles()` no está disponible, puede que estés usando una versión anterior del SDK.
 
-**Solution**: Update to the latest SDK version:
+**Solución**: Actualiza a la versión más reciente del SDK:
 - **Python**: `pip install --upgrade claude-agent-sdk`
 - **TypeScript**: `npm install @anthropic-ai/claude-agent-sdk@latest`
 
-### User messages don't have UUIDs
+### Los mensajes de usuario no tienen UUIDs
 
-If `message.uuid` is `undefined` or missing, you're not receiving checkpoint UUIDs.
+Si `message.uuid` es `undefined` o está ausente, no estás recibiendo los UUIDs de checkpoint.
 
-**Cause**: The `replay-user-messages` option isn't set.
+**Causa**: La opción `replay-user-messages` no está configurada.
 
-**Solution**: Add `extra_args={"replay-user-messages": None}` (Python) or `extraArgs: { 'replay-user-messages': null }` (TypeScript) to your options.
+**Solución**: Agrega `extra_args={"replay-user-messages": None}` (Python) o `extraArgs: { 'replay-user-messages': null }` (TypeScript) a tus opciones.
 
-### "No file checkpoint found for message" error
+### Error "No file checkpoint found for message"
 
-This error occurs when the checkpoint data doesn't exist for the specified user message UUID.
+Este error ocurre cuando los datos del checkpoint no existen para el UUID de mensaje de usuario especificado.
 
-**Common causes**:
-- File checkpointing was not enabled on the original session (`enable_file_checkpointing` or `enableFileCheckpointing` was not set to `true`)
-- The session wasn't properly completed before attempting to resume and rewind
+**Causas comunes**:
+- El checkpointing de archivos no estaba habilitado en la sesión original (`enable_file_checkpointing` o `enableFileCheckpointing` no estaba configurado en `true`)
+- La sesión no se completó correctamente antes de intentar reanudarla y revertirla
 
-**Solution**: Ensure `enable_file_checkpointing=True` (Python) or `enableFileCheckpointing: true` (TypeScript) was set on the original session, then use the pattern shown in the examples: capture the first user message UUID, complete the session fully, then resume with an empty prompt and call `rewindFiles()` once.
+**Solución**: Asegúrate de que `enable_file_checkpointing=True` (Python) o `enableFileCheckpointing: true` (TypeScript) estaba configurado en la sesión original, luego usa el patrón mostrado en los ejemplos: captura el UUID del primer mensaje de usuario, completa la sesión completamente, luego reanuda con un prompt vacío y llama a `rewindFiles()` una sola vez.
 
-### "ProcessTransport is not ready for writing" error
+### Error "ProcessTransport is not ready for writing"
 
-This error occurs when you call `rewindFiles()` or `rewind_files()` after you've finished iterating through the response. The connection to the CLI process closes when the loop completes.
+Este error ocurre cuando llamas a `rewindFiles()` o `rewind_files()` después de haber terminado de iterar sobre la respuesta. La conexión al proceso de la CLI se cierra cuando el bucle termina.
 
-**Solution**: Resume the session with an empty prompt, then call rewind on the new query:
+**Solución**: Reanuda la sesión con un prompt vacío y luego llama a rewind en la nueva consulta:
 
 **Python**
 ```python
@@ -746,9 +746,9 @@ for await (const msg of rewindQuery) {
 }
 ```
 
-## Next steps
+## Próximos pasos
 
-- **[Sessions](/docs/en/agent-sdk/sessions)**: learn how to resume sessions, which is required for rewinding after the stream completes. Covers session IDs, resuming conversations, and session forking.
-- **[Permissions](/docs/en/agent-sdk/permissions)**: configure which tools Claude can use and how file modifications are approved. Useful if you want more control over when edits happen.
-- **[TypeScript SDK reference](/docs/en/agent-sdk/typescript)**: complete API reference including all options for `query()` and the `rewindFiles()` method.
-- **[Python SDK reference](/docs/en/agent-sdk/python)**: complete API reference including all options for `ClaudeAgentOptions` and the `rewind_files()` method.
+- **[Sessions](../Core%20concepts/Work%20with%20sessions.md)**: aprende a reanudar sesiones, lo cual es necesario para revertir después de que el flujo se complete. Cubre los IDs de sesión, la reanudación de conversaciones y la bifurcación de sesiones.
+- **[Permissions](./Configure%20permissions.md)**: configura qué herramientas puede usar Claude y cómo se aprueban las modificaciones de archivos. Útil si quieres tener más control sobre cuándo ocurren las ediciones.
+- **[TypeScript SDK reference](/docs/en/agent-sdk/typescript)**: referencia completa de la API incluyendo todas las opciones de `query()` y el método `rewindFiles()`.
+- **[Python SDK reference](/docs/en/agent-sdk/python)**: referencia completa de la API incluyendo todas las opciones de `ClaudeAgentOptions` y el método `rewind_files()`.

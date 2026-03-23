@@ -1,36 +1,36 @@
 # Quickstart
 
-Get started with the Python or TypeScript Agent SDK to build AI agents that work autonomously
+Comienza con el Agent SDK para Python o TypeScript y construye agentes de IA que trabajen de forma autónoma
 
 ---
 
-Use the Agent SDK to build an AI agent that reads your code, finds bugs, and fixes them, all without manual intervention.
+Usa el Agent SDK para construir un agente de IA que lea tu código, encuentre errores y los corrija, todo sin intervención manual.
 
-**What you'll do:**
-1. Set up a project with the Agent SDK
-2. Create a file with some buggy code
-3. Run an agent that finds and fixes the bugs automatically
+**Lo que harás:**
+1. Configurar un proyecto con el Agent SDK
+2. Crear un archivo con código defectuoso
+3. Ejecutar un agente que encuentre y corrija los errores automáticamente
 
-## Prerequisites
+## Requisitos previos
 
-- **Node.js 18+** or **Python 3.10+**
-- An **Anthropic account** ([sign up here](https://platform.claude.com/))
+- **Node.js 18+** o **Python 3.10+**
+- Una **cuenta de Anthropic** ([regístrate aquí](https://platform.claude.com/))
 
-## Setup
+## Configuración
 
-### 1. Create a project folder
+### 1. Crear una carpeta de proyecto
 
-Create a new directory for this quickstart:
+Crea un nuevo directorio para este quickstart:
 
 ```bash
 mkdir my-agent && cd my-agent
 ```
 
-For your own projects, you can run the SDK from any folder; it will have access to files in that directory and its subdirectories by default.
+Para tus propios proyectos, puedes ejecutar el SDK desde cualquier carpeta; tendrá acceso a los archivos de ese directorio y sus subdirectorios de forma predeterminada.
 
-### 2. Install the SDK
+### 2. Instalar el SDK
 
-Install the Agent SDK package for your language:
+Instala el paquete del Agent SDK para tu lenguaje:
 
 #### TypeScript
 
@@ -40,40 +40,40 @@ npm install @anthropic-ai/claude-agent-sdk
 
 #### Python (uv)
 
-[uv Python package manager](https://docs.astral.sh/uv/) is a fast Python package manager that handles virtual environments automatically:
+[uv Python package manager](https://docs.astral.sh/uv/) es un gestor de paquetes de Python rápido que maneja entornos virtuales automáticamente:
 ```bash
 uv init && uv add claude-agent-sdk
 ```
 
 #### Python (pip)
 
-Create a virtual environment first, then install:
+Primero crea un entorno virtual y luego instala:
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip3 install claude-agent-sdk
 ```
 
-### 3. Set your API key
+### 3. Configurar tu API key
 
-Get an API key from the [Claude Console](https://platform.claude.com/), then create a `.env` file in your project directory:
+Obtén una API key desde la [Claude Console](https://platform.claude.com/) y luego crea un archivo `.env` en el directorio de tu proyecto:
 
 ```bash
 ANTHROPIC_API_KEY=your-api-key
 ```
 
-The SDK also supports authentication via third-party API providers:
+El SDK también admite autenticación a través de proveedores de API de terceros:
 
-- **Amazon Bedrock**: set `CLAUDE_CODE_USE_BEDROCK=1` environment variable and configure AWS credentials
-- **Google Vertex AI**: set `CLAUDE_CODE_USE_VERTEX=1` environment variable and configure Google Cloud credentials
-- **Microsoft Azure**: set `CLAUDE_CODE_USE_FOUNDRY=1` environment variable and configure Azure credentials
+- **Amazon Bedrock**: establece la variable de entorno `CLAUDE_CODE_USE_BEDROCK=1` y configura las credenciales de AWS
+- **Google Vertex AI**: establece la variable de entorno `CLAUDE_CODE_USE_VERTEX=1` y configura las credenciales de Google Cloud
+- **Microsoft Azure**: establece la variable de entorno `CLAUDE_CODE_USE_FOUNDRY=1` y configura las credenciales de Azure
 
-See the setup guides for [Bedrock](https://code.claude.com/docs/en/amazon-bedrock), [Vertex AI](https://code.claude.com/docs/en/google-vertex-ai), or [Azure AI Foundry](https://code.claude.com/docs/en/azure-ai-foundry) for details.
+Consulta las guías de configuración para [Bedrock](https://code.claude.com/docs/en/amazon-bedrock), [Vertex AI](https://code.claude.com/docs/en/google-vertex-ai) o [Azure AI Foundry](https://code.claude.com/docs/en/azure-ai-foundry) para más detalles.
 
-> **Nota:** Unless previously approved, Anthropic does not allow third party developers to offer claude.ai login or rate limits for their products, including agents built on the Claude Agent SDK. Please use the API key authentication methods described in this document instead.
+> **Nota:** Salvo aprobación previa, Anthropic no permite que desarrolladores de terceros ofrezcan el inicio de sesión de claude.ai ni sus límites de uso para sus productos, incluyendo agentes construidos sobre el Claude Agent SDK. Utiliza en su lugar los métodos de autenticación por API key descritos en este documento.
 
-## Create a buggy file
+## Crear un archivo con errores
 
-This quickstart walks you through building an agent that can find and fix bugs in code. First, you need a file with some intentional bugs for the agent to fix. Create `utils.py` in the `my-agent` directory and paste the following code:
+Este quickstart te guía en la construcción de un agente capaz de encontrar y corregir errores en el código. Primero, necesitas un archivo con algunos errores intencionales para que el agente los corrija. Crea `utils.py` en el directorio `my-agent` y pega el siguiente código:
 
 ```python
 def calculate_average(numbers):
@@ -87,13 +87,13 @@ def get_user_name(user):
     return user["name"].upper()
 ```
 
-This code has two bugs:
-1. `calculate_average([])` crashes with division by zero
-2. `get_user_name(None)` crashes with a TypeError
+Este código tiene dos errores:
+1. `calculate_average([])` falla con división por cero
+2. `get_user_name(None)` falla con un TypeError
 
-## Build an agent that finds and fixes bugs
+## Construir un agente que encuentre y corrija errores
 
-Create `agent.py` if you're using the Python SDK, or `agent.ts` for TypeScript:
+Crea `agent.py` si usas el SDK de Python, o `agent.ts` para TypeScript:
 
 **Python**
 ```python
@@ -151,23 +151,23 @@ for await (const message of query({
 }
 ```
 
-This code has three main parts:
+Este código tiene tres partes principales:
 
-1. **`query`**: the main entry point that creates the agentic loop. It returns an async iterator, so you use `async for` to stream messages as Claude works. See the full API in the [Python](/docs/en/agent-sdk/python#query) or [TypeScript](/docs/en/agent-sdk/typescript#query) SDK reference.
+1. **`query`**: el punto de entrada principal que crea el agentic loop. Devuelve un iterador asíncrono, por lo que usas `async for` para recibir mensajes en streaming a medida que Claude trabaja. Consulta la API completa en la referencia del SDK de Python o TypeScript.
 
-2. **`prompt`**: what you want Claude to do. Claude figures out which tools to use based on the task.
+2. **`prompt`**: lo que quieres que Claude haga. Claude determina qué herramientas usar según la tarea.
 
-3. **`options`**: configuration for the agent. This example uses `allowedTools` to pre-approve `Read`, `Edit`, and `Glob`, and `permissionMode: "acceptEdits"` to auto-approve file changes. Other options include `systemPrompt`, `mcpServers`, and more. See all options for [Python](/docs/en/agent-sdk/python#claude-agent-options) or [TypeScript](/docs/en/agent-sdk/typescript#options).
+3. **`options`**: configuración para el agente. Este ejemplo usa `allowedTools` para aprobar previamente `Read`, `Edit` y `Glob`, y `permissionMode: "acceptEdits"` para aprobar automáticamente los cambios en archivos. Otras opciones incluyen `systemPrompt`, `mcpServers` y más. Consulta todas las opciones en la referencia del SDK de Python o TypeScript.
 
-The `async for` loop keeps running as Claude thinks, calls tools, observes results, and decides what to do next. Each iteration yields a message: Claude's reasoning, a tool call, a tool result, or the final outcome. The SDK handles the orchestration (tool execution, context management, retries) so you just consume the stream. The loop ends when Claude finishes the task or hits an error.
+El bucle `async for` continúa ejecutándose mientras Claude piensa, llama herramientas, observa resultados y decide qué hacer a continuación. Cada iteración produce un mensaje: el razonamiento de Claude, una llamada a herramienta, un resultado de herramienta o el resultado final. El SDK se encarga de la orquestación (ejecución de herramientas, gestión del contexto, reintentos) para que simplemente consumas el stream. El bucle termina cuando Claude completa la tarea o encuentra un error.
 
-The message handling inside the loop filters for human-readable output. Without filtering, you'd see raw message objects including system initialization and internal state, which is useful for debugging but noisy otherwise.
+El manejo de mensajes dentro del bucle filtra para mostrar solo la salida legible por humanos. Sin filtrado, verías objetos de mensaje en bruto, incluyendo la inicialización del sistema y el estado interno, lo cual es útil para depuración pero ruidoso en otros casos.
 
-> **Nota:** This example uses streaming to show progress in real-time. If you don't need live output (e.g., for background jobs or CI pipelines), you can collect all messages at once. See [Streaming vs. single-turn mode](/docs/en/agent-sdk/streaming-vs-single-mode) for details.
+> **Nota:** Este ejemplo usa streaming para mostrar el progreso en tiempo real. Si no necesitas salida en vivo (por ejemplo, para tareas en segundo plano o pipelines de CI), puedes recopilar todos los mensajes de una vez. Consulta [Streaming vs. single-turn mode](./Guides/Streaming%20Input.md) para más detalles.
 
-### Run your agent
+### Ejecutar tu agente
 
-Your agent is ready. Run it with the following command:
+Tu agente está listo. Ejecútalo con el siguiente comando:
 
 #### Python
 
@@ -181,29 +181,29 @@ python3 agent.py
 npx tsx agent.ts
 ```
 
-After running, check `utils.py`. You'll see defensive code handling empty lists and null users. Your agent autonomously:
+Después de ejecutarlo, revisa `utils.py`. Verás código defensivo que maneja listas vacías y usuarios nulos. Tu agente de forma autónoma:
 
-1. **Read** `utils.py` to understand the code
-2. **Analyzed** the logic and identified edge cases that would crash
-3. **Edited** the file to add proper error handling
+1. **Leyó** `utils.py` para entender el código
+2. **Analizó** la lógica e identificó los casos límite que causarían fallos
+3. **Editó** el archivo para agregar el manejo de errores adecuado
 
-This is what makes the Agent SDK different: Claude executes tools directly instead of asking you to implement them.
+Esto es lo que hace diferente al Agent SDK: Claude ejecuta las herramientas directamente en lugar de pedirte que las implementes.
 
-> **Nota:** If you see "API key not found", make sure you've set the `ANTHROPIC_API_KEY` environment variable in your `.env` file or shell environment. See the [full troubleshooting guide](https://code.claude.com/docs/en/troubleshooting) for more help.
+> **Nota:** Si ves "API key not found", asegúrate de haber definido la variable de entorno `ANTHROPIC_API_KEY` en tu archivo `.env` o en el entorno del shell. Consulta la [guía completa de resolución de problemas](https://code.claude.com/docs/en/troubleshooting) para obtener más ayuda.
 
-### Try other prompts
+### Prueba otros prompts
 
-Now that your agent is set up, try some different prompts:
+Ahora que tu agente está configurado, prueba algunos prompts diferentes:
 
 - `"Add docstrings to all functions in utils.py"`
 - `"Add type hints to all functions in utils.py"`
 - `"Create a README.md documenting the functions in utils.py"`
 
-### Customize your agent
+### Personaliza tu agente
 
-You can modify your agent's behavior by changing the options. Here are a few examples:
+Puedes modificar el comportamiento de tu agente cambiando las opciones. Aquí hay algunos ejemplos:
 
-**Add web search capability:**
+**Agregar capacidad de búsqueda web:**
 
 **Python**
 ```python
@@ -222,7 +222,7 @@ const _ = {
 };
 ```
 
-**Give Claude a custom system prompt:**
+**Darle a Claude un system prompt personalizado:**
 
 **Python**
 ```python
@@ -244,7 +244,7 @@ const _ = {
 };
 ```
 
-**Run commands in the terminal:**
+**Ejecutar comandos en el terminal:**
 
 **Python**
 ```python
@@ -263,36 +263,36 @@ const _ = {
 };
 ```
 
-With `Bash` enabled, try: `"Write unit tests for utils.py, run them, and fix any failures"`
+Con `Bash` habilitado, prueba: `"Write unit tests for utils.py, run them, and fix any failures"`
 
-## Key concepts
+## Conceptos clave
 
-**Tools** control what your agent can do:
+**Tools** controla lo que tu agente puede hacer:
 
-| Tools | What the agent can do |
-|-------|----------------------|
-| `Read`, `Glob`, `Grep` | Read-only analysis |
-| `Read`, `Edit`, `Glob` | Analyze and modify code |
-| `Read`, `Edit`, `Bash`, `Glob`, `Grep` | Full automation |
+| Tools | Lo que el agente puede hacer |
+|-------|------------------------------|
+| `Read`, `Glob`, `Grep` | Análisis de solo lectura |
+| `Read`, `Edit`, `Glob` | Analizar y modificar código |
+| `Read`, `Edit`, `Bash`, `Glob`, `Grep` | Automatización completa |
 
-**Permission modes** control how much human oversight you want:
+**Permission modes** controla cuánta supervisión humana deseas:
 
-| Mode | Behavior | Use case |
-|------|----------|----------|
-| `acceptEdits` | Auto-approves file edits, asks for other actions | Trusted development workflows |
-| `dontAsk` (TypeScript only) | Denies anything not in `allowedTools` | Locked-down headless agents |
-| `bypassPermissions` | Runs every tool without prompts | Sandboxed CI, fully trusted environments |
-| `default` | Requires a `canUseTool` callback to handle approval | Custom approval flows |
+| Mode | Comportamiento | Caso de uso |
+|------|----------------|-------------|
+| `acceptEdits` | Aprueba automáticamente las ediciones de archivos, solicita confirmación para otras acciones | Flujos de trabajo de desarrollo confiables |
+| `dontAsk` (solo TypeScript) | Deniega todo lo que no esté en `allowedTools` | Agentes headless con restricciones estrictas |
+| `bypassPermissions` | Ejecuta todas las herramientas sin solicitudes de confirmación | CI en sandbox, entornos completamente confiables |
+| `default` | Requiere un callback `canUseTool` para gestionar la aprobación | Flujos de aprobación personalizados |
 
-The example above uses `acceptEdits` mode, which auto-approves file operations so the agent can run without interactive prompts. If you want to prompt users for approval, use `default` mode and provide a [`canUseTool` callback](/docs/en/agent-sdk/user-input) that collects user input. For more control, see [Permissions](/docs/en/agent-sdk/permissions).
+El ejemplo anterior usa el modo `acceptEdits`, que aprueba automáticamente las operaciones de archivos para que el agente pueda ejecutarse sin solicitudes interactivas. Si deseas pedir aprobación a los usuarios, usa el modo `default` y proporciona un [callback `canUseTool`](./Guides/Handle%20approvals%20and%20user%20input.md) que recopile la entrada del usuario. Para mayor control, consulta [Permissions](./Guides/Configure%20permissions.md).
 
-## Next steps
+## Próximos pasos
 
-Now that you've created your first agent, learn how to extend its capabilities and tailor it to your use case:
+Ahora que has creado tu primer agente, aprende cómo ampliar sus capacidades y adaptarlo a tu caso de uso:
 
-- **[Permissions](/docs/en/agent-sdk/permissions)**: control what your agent can do and when it needs approval
-- **[Hooks](/docs/en/agent-sdk/hooks)**: run custom code before or after tool calls
-- **[Sessions](/docs/en/agent-sdk/sessions)**: build multi-turn agents that maintain context
-- **[MCP servers](/docs/en/agent-sdk/mcp)**: connect to databases, browsers, APIs, and other external systems
-- **[Hosting](/docs/en/agent-sdk/hosting)**: deploy agents to Docker, cloud, and CI/CD
-- **[Example agents](https://github.com/anthropics/claude-agent-sdk-demos)**: see complete examples: email assistant, research agent, and more
+- **[Permissions](./Guides/Configure%20permissions.md)**: controla lo que tu agente puede hacer y cuándo necesita aprobación
+- **[Hooks](./Guides/Intercept%20and%20control%20agent%20behavior%20with%20hooks.md)**: ejecuta código personalizado antes o después de las llamadas a herramientas
+- **[Sessions](./Core%20concepts/Work%20with%20sessions.md)**: construye agentes multi-turno que mantienen el contexto
+- **[MCP servers](./Guides/Connect%20to%20external%20tools%20with%20MCP.md)**: conéctate a bases de datos, navegadores, APIs y otros sistemas externos
+- **[Hosting](./Guides/Hosting%20the%20Agent%20SDK.md)**: despliega agentes en Docker, la nube y CI/CD
+- **[Example agents](https://github.com/anthropics/claude-agent-sdk-demos)**: ve ejemplos completos: asistente de correo electrónico, agente de investigación y más

@@ -1,25 +1,25 @@
 # Streaming Input
 
-Understanding the two input modes for Claude Agent SDK and when to use each
+Comprensión de los dos modos de entrada del Claude Agent SDK y cuándo usar cada uno
 
 ---
 
-## Overview
+## Descripción General
 
-The Claude Agent SDK supports two distinct input modes for interacting with agents:
+El Claude Agent SDK admite dos modos de entrada distintos para interactuar con los agentes:
 
-- **Streaming Input Mode** (Default & Recommended) - A persistent, interactive session
-- **Single Message Input** - One-shot queries that use session state and resuming
+- **Streaming Input Mode** (Por defecto y recomendado) - Una sesión interactiva y persistente
+- **Single Message Input** - Consultas de un solo disparo que usan estado de sesión y reanudación
 
-This guide explains the differences, benefits, and use cases for each mode to help you choose the right approach for your application.
+Esta guía explica las diferencias, beneficios y casos de uso de cada modo para ayudarte a elegir el enfoque correcto para tu aplicación.
 
-## Streaming Input Mode (Recommended)
+## Streaming Input Mode (Recomendado)
 
-Streaming input mode is the **preferred** way to use the Claude Agent SDK. It provides full access to the agent's capabilities and enables rich, interactive experiences.
+El modo de entrada por streaming es la forma **preferida** de usar el Claude Agent SDK. Proporciona acceso completo a las capacidades del agente y habilita experiencias interactivas enriquecidas.
 
-It allows the agent to operate as a long lived process that takes in user input, handles interruptions, surfaces permission requests, and handles session management.
+Permite que el agente opere como un proceso de larga duración que recibe entrada del usuario, gestiona interrupciones, expone solicitudes de permisos y administra el estado de la sesión.
 
-### How It Works
+### Cómo Funciona
 
 ```mermaid
 sequenceDiagram
@@ -57,16 +57,16 @@ sequenceDiagram
     deactivate Agent
 ```
 
-### Benefits
+### Beneficios
 
-- **Image Uploads** — Attach images directly to messages for visual analysis and understanding
-- **Queued Messages** — Send multiple messages that process sequentially, with ability to interrupt
-- **Tool Integration** — Full access to all tools and custom MCP servers during the session
-- **Hooks Support** — Use lifecycle hooks to customize behavior at various points
-- **Real-time Feedback** — See responses as they're generated, not just final results
-- **Context Persistence** — Maintain conversation context across multiple turns naturally
+- **Image Uploads** — Adjunta imágenes directamente a los mensajes para análisis y comprensión visual
+- **Queued Messages** — Envía múltiples mensajes que se procesan secuencialmente, con capacidad de interrupción
+- **Tool Integration** — Acceso completo a todas las herramientas y servidores MCP personalizados durante la sesión
+- **Hooks Support** — Usa lifecycle hooks para personalizar el comportamiento en distintos puntos
+- **Real-time Feedback** — Ve las respuestas a medida que se generan, no solo los resultados finales
+- **Context Persistence** — Mantén el contexto de la conversación a través de múltiples turnos de forma natural
 
-### Implementation Example
+### Ejemplo de Implementación
 
 **TypeScript**
 ```typescript
@@ -191,26 +191,26 @@ asyncio.run(streaming_analysis())
 
 ## Single Message Input
 
-Single message input is simpler but more limited.
+El modo de entrada de mensaje único es más simple pero también más limitado.
 
-### When to Use Single Message Input
+### Cuándo Usar Single Message Input
 
-Use single message input when:
+Usa el modo de mensaje único cuando:
 
-- You need a one-shot response
-- You do not need image attachments, hooks, etc.
-- You need to operate in a stateless environment, such as a lambda function
+- Necesitas una respuesta de un solo disparo
+- No necesitas adjuntar imágenes, hooks, etc.
+- Necesitas operar en un entorno sin estado, como una función lambda
 
-### Limitations
+### Limitaciones
 
-> **Advertencia:** Single message input mode does **not** support:
-> - Direct image attachments in messages
-> - Dynamic message queueing
-> - Real-time interruption
-> - Hook integration
-> - Natural multi-turn conversations
+> **Advertencia:** El modo Single Message Input **no** admite:
+> - Adjuntar imágenes directamente en los mensajes
+> - Cola dinámica de mensajes
+> - Interrupción en tiempo real
+> - Integración de hooks
+> - Conversaciones multi-turno naturales
 
-### Implementation Example
+### Ejemplo de Implementación
 
 **TypeScript**
 ```typescript

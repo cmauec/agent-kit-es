@@ -1,14 +1,14 @@
-# Slash Commands in the SDK
+# Slash Commands en el SDK
 
-Learn how to use slash commands to control Claude Code sessions through the SDK
+Aprende a usar slash commands para controlar sesiones de Claude Code a través del SDK
 
 ---
 
-Slash commands provide a way to control Claude Code sessions with special commands that start with `/`. These commands can be sent through the SDK to perform actions like clearing conversation history, compacting messages, or getting help.
+Los slash commands proporcionan una forma de controlar las sesiones de Claude Code con comandos especiales que comienzan con `/`. Estos comandos pueden enviarse a través del SDK para realizar acciones como limpiar el historial de conversación, compactar mensajes u obtener ayuda.
 
-## Discovering Available Slash Commands
+## Descubrir los Slash Commands Disponibles
 
-The Claude Agent SDK provides information about available slash commands in the system initialization message. Access this information when your session starts:
+El Claude Agent SDK proporciona información sobre los slash commands disponibles en el mensaje de inicialización del sistema. Accede a esta información cuando tu sesión comienza:
 
 **TypeScript**
 ```typescript
@@ -41,9 +41,9 @@ async def main():
 asyncio.run(main())
 ```
 
-## Sending Slash Commands
+## Enviar Slash Commands
 
-Send slash commands by including them in your prompt string, just like regular text:
+Envía slash commands incluyéndolos en tu cadena de prompt, igual que el texto normal:
 
 **TypeScript**
 ```typescript
@@ -76,11 +76,11 @@ async def main():
 asyncio.run(main())
 ```
 
-## Common Slash Commands
+## Slash Commands Comunes
 
-### `/compact` - Compact Conversation History
+### `/compact` - Compactar el Historial de Conversación
 
-The `/compact` command reduces the size of your conversation history by summarizing older messages while preserving important context:
+El comando `/compact` reduce el tamaño del historial de conversación resumiendo los mensajes más antiguos y preservando el contexto importante:
 
 **TypeScript**
 ```typescript
@@ -115,9 +115,9 @@ async def main():
 asyncio.run(main())
 ```
 
-### `/clear` - Clear Conversation
+### `/clear` - Limpiar la Conversación
 
-The `/clear` command starts a fresh conversation by clearing all previous history:
+El comando `/clear` inicia una conversación nueva eliminando todo el historial previo:
 
 **TypeScript**
 ```typescript
@@ -152,40 +152,40 @@ async def main():
 asyncio.run(main())
 ```
 
-## Creating Custom Slash Commands
+## Crear Slash Commands Personalizados
 
-In addition to using built-in slash commands, you can create your own custom commands that are available through the SDK. Custom commands are defined as markdown files in specific directories, similar to how subagents are configured.
+Además de usar los slash commands integrados, puedes crear tus propios comandos personalizados que estén disponibles a través del SDK. Los comandos personalizados se definen como archivos markdown en directorios específicos, de manera similar a cómo se configuran los subagentes.
 
-> **Nota:** The `.claude/commands/` directory is the legacy format. The recommended format is `.claude/skills/<name>/SKILL.md`, which supports the same slash-command invocation (`/name`) plus autonomous invocation by Claude. See [Skills](/docs/en/agent-sdk/skills) for the current format. The CLI continues to support both formats, and the examples below remain accurate for `.claude/commands/`.
+> **Nota:** El directorio `.claude/commands/` es el formato heredado. El formato recomendado es `.claude/skills/<name>/SKILL.md`, que admite la misma invocación por slash command (`/name`) además de la invocación autónoma por parte de Claude. Consulta [Skills](./Agent%20Skills%20in%20the%20SDK.md) para ver el formato actual. La CLI sigue admitiendo ambos formatos, y los ejemplos a continuación siguen siendo válidos para `.claude/commands/`.
 
-### File Locations
+### Ubicaciones de Archivos
 
-Custom slash commands are stored in designated directories based on their scope:
+Los slash commands personalizados se almacenan en directorios designados según su alcance:
 
-- **Project commands**: `.claude/commands/` - Available only in the current project (legacy; prefer `.claude/skills/`)
-- **Personal commands**: `~/.claude/commands/` - Available across all your projects (legacy; prefer `~/.claude/skills/`)
+- **Comandos de proyecto**: `.claude/commands/` - Disponibles solo en el proyecto actual (heredado; se prefiere `.claude/skills/`)
+- **Comandos personales**: `~/.claude/commands/` - Disponibles en todos tus proyectos (heredado; se prefiere `~/.claude/skills/`)
 
-### File Format
+### Formato de Archivo
 
-Each custom command is a markdown file where:
-- The filename (without `.md` extension) becomes the command name
-- The file content defines what the command does
-- Optional YAML frontmatter provides configuration
+Cada comando personalizado es un archivo markdown donde:
+- El nombre del archivo (sin la extensión `.md`) se convierte en el nombre del comando
+- El contenido del archivo define lo que hace el comando
+- El frontmatter YAML opcional proporciona configuración
 
-#### Basic Example
+#### Ejemplo Básico
 
-Create `.claude/commands/refactor.md`:
+Crea `.claude/commands/refactor.md`:
 
 ```markdown
 Refactor the selected code to improve readability and maintainability.
 Focus on clean code principles and best practices.
 ```
 
-This creates the `/refactor` command that you can use through the SDK.
+Esto crea el comando `/refactor` que puedes usar a través del SDK.
 
-#### With Frontmatter
+#### Con Frontmatter
 
-Create `.claude/commands/security-check.md`:
+Crea `.claude/commands/security-check.md`:
 
 ```markdown
 ---
@@ -201,9 +201,9 @@ Analyze the codebase for security vulnerabilities including:
 - Insecure configurations
 ```
 
-### Using Custom Commands in the SDK
+### Usar Comandos Personalizados en el SDK
 
-Once defined in the filesystem, custom commands are automatically available through the SDK:
+Una vez definidos en el sistema de archivos, los comandos personalizados están disponibles automáticamente a través del SDK:
 
 **TypeScript**
 ```typescript
@@ -257,13 +257,13 @@ async def main():
 asyncio.run(main())
 ```
 
-### Advanced Features
+### Funciones Avanzadas
 
-#### Arguments and Placeholders
+#### Argumentos y Marcadores de Posición
 
-Custom commands support dynamic arguments using placeholders:
+Los comandos personalizados admiten argumentos dinámicos mediante marcadores de posición:
 
-Create `.claude/commands/fix-issue.md`:
+Crea `.claude/commands/fix-issue.md`:
 
 ```markdown
 ---
@@ -275,7 +275,7 @@ Fix issue #$1 with priority $2.
 Check the issue description and implement the necessary changes.
 ```
 
-Use in SDK:
+Úsalo en el SDK:
 
 **TypeScript**
 ```typescript
@@ -310,11 +310,11 @@ async def main():
 asyncio.run(main())
 ```
 
-#### Bash Command Execution
+#### Ejecución de Comandos Bash
 
-Custom commands can execute bash commands and include their output:
+Los comandos personalizados pueden ejecutar comandos bash e incluir su salida:
 
-Create `.claude/commands/git-commit.md`:
+Crea `.claude/commands/git-commit.md`:
 
 ```markdown
 ---
@@ -332,11 +332,11 @@ description: Create a git commit
 Create a git commit with appropriate message based on the changes.
 ```
 
-#### File References
+#### Referencias a Archivos
 
-Include file contents using the `@` prefix:
+Incluye el contenido de archivos usando el prefijo `@`:
 
-Create `.claude/commands/review-config.md`:
+Crea `.claude/commands/review-config.md`:
 
 ```markdown
 ---
@@ -351,9 +351,9 @@ Review the following configuration files for issues:
 Check for security issues, outdated dependencies, and misconfigurations.
 ```
 
-### Organization with Namespacing
+### Organización con Espacios de Nombres
 
-Organize commands in subdirectories for better structure:
+Organiza los comandos en subdirectorios para una mejor estructura:
 
 ```bash
 .claude/commands/
@@ -366,13 +366,13 @@ Organize commands in subdirectories for better structure:
 └── review.md              # Creates /review (project)
 ```
 
-The subdirectory appears in the command description but doesn't affect the command name itself.
+El subdirectorio aparece en la descripción del comando, pero no afecta al nombre del comando en sí.
 
-### Practical Examples
+### Ejemplos Prácticos
 
-#### Code Review Command
+#### Comando de Revisión de Código
 
-Create `.claude/commands/code-review.md`:
+Crea `.claude/commands/code-review.md`:
 
 ```markdown
 ---
@@ -398,9 +398,9 @@ Review the above changes for:
 Provide specific, actionable feedback organized by priority.
 ```
 
-#### Test Runner Command
+#### Comando de Ejecución de Tests
 
-Create `.claude/commands/test.md`:
+Crea `.claude/commands/test.md`:
 
 ```markdown
 ---
@@ -417,7 +417,7 @@ Run tests matching pattern: $ARGUMENTS
 4. Re-run to verify fixes
 ```
 
-Use these commands through the SDK:
+Usa estos comandos a través del SDK:
 
 **TypeScript**
 ```typescript
@@ -461,10 +461,10 @@ async def main():
 asyncio.run(main())
 ```
 
-## See Also
+## Ver También
 
-- [Slash Commands](https://code.claude.com/docs/en/slash-commands) - Complete slash command documentation
-- [Subagents in the SDK](/docs/en/agent-sdk/subagents) - Similar filesystem-based configuration for subagents
-- [TypeScript SDK reference](/docs/en/agent-sdk/typescript) - Complete API documentation
-- [SDK overview](/docs/en/agent-sdk/overview) - General SDK concepts
-- [CLI reference](https://code.claude.com/docs/en/cli-reference) - Command-line interface
+- [Slash Commands](https://code.claude.com/docs/en/slash-commands) - Documentación completa de slash commands
+- [Subagents in the SDK](./Subagents%20in%20the%20SDK.md) - Configuración basada en el sistema de archivos para subagentes, similar a los slash commands
+- [TypeScript SDK reference](/docs/en/agent-sdk/typescript) - Documentación completa de la API
+- [SDK overview](../Agent%20SDK%20overview.md) - Conceptos generales del SDK
+- [CLI reference](https://code.claude.com/docs/en/cli-reference) - Interfaz de línea de comandos

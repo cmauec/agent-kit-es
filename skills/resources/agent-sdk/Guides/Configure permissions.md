@@ -1,54 +1,54 @@
-# Configure permissions
+# Configurar permisos
 
-Control how your agent uses tools with permission modes, hooks, and declarative allow/deny rules.
+Controla cómo tu agente utiliza las herramientas mediante modos de permisos, hooks y reglas declarativas de allow/deny.
 
 ---
 
-The Claude Agent SDK provides permission controls to manage how Claude uses tools. Use permission modes and rules to define what's allowed automatically, and the [`canUseTool` callback](/docs/en/agent-sdk/user-input) to handle everything else at runtime.
+El SDK de Agentes de Claude ofrece controles de permisos para gestionar cómo Claude usa las herramientas. Utiliza modos de permisos y reglas para definir qué se aprueba automáticamente, y el callback [`canUseTool`](./Handle%20approvals%20and%20user%20input.md) para manejar todo lo demás en tiempo de ejecución.
 
-> **Nota:** This page covers permission modes and rules. To build interactive approval flows where users approve or deny tool requests at runtime, see [Handle approvals and user input](/docs/en/agent-sdk/user-input).
+> **Nota:** Esta página cubre los modos de permisos y las reglas. Para crear flujos de aprobación interactivos donde los usuarios aprueben o denieguen solicitudes de herramientas en tiempo de ejecución, consulta [Gestionar aprobaciones y entrada del usuario](./Handle%20approvals%20and%20user%20input.md).
 
-## How permissions are evaluated
+## Cómo se evalúan los permisos
 
-When Claude requests a tool, the SDK checks permissions in this order:
+Cuando Claude solicita una herramienta, el SDK verifica los permisos en este orden:
 
 ### 1. Hooks
 
-Run [hooks](/docs/en/agent-sdk/hooks) first, which can allow, deny, or continue to the next step
+Ejecuta los [hooks](./Intercept%20and%20control%20agent%20behavior%20with%20hooks.md) primero; estos pueden permitir, denegar o continuar al siguiente paso.
 
-### 2. Deny rules
+### 2. Reglas de denegación
 
-Check `deny` rules (from `disallowed_tools` and [settings.json](https://code.claude.com/docs/en/settings#permission-settings)). If a deny rule matches, the tool is blocked, even in `bypassPermissions` mode.
+Verifica las reglas `deny` (de `disallowed_tools` y [settings.json](https://code.claude.com/docs/en/settings#permission-settings)). Si una regla de denegación coincide, la herramienta se bloquea, incluso en el modo `bypassPermissions`.
 
-### 3. Permission mode
+### 3. Modo de permisos
 
-Apply the active [permission mode](#permission-modes). `bypassPermissions` approves everything that reaches this step. `acceptEdits` approves file operations. Other modes fall through.
+Aplica el [modo de permisos](#modos-de-permisos) activo. `bypassPermissions` aprueba todo lo que llega a este paso. `acceptEdits` aprueba las operaciones de archivo. Los demás modos continúan hacia el siguiente paso.
 
-### 4. Allow rules
+### 4. Reglas de permiso
 
-Check `allow` rules (from `allowed_tools` and settings.json). If a rule matches, the tool is approved.
+Verifica las reglas `allow` (de `allowed_tools` y settings.json). Si una regla coincide, la herramienta se aprueba.
 
-### 5. canUseTool callback
+### 5. Callback canUseTool
 
-If not resolved by any of the above, call your [`canUseTool` callback](/docs/en/agent-sdk/user-input) for a decision. In `dontAsk` mode, this step is skipped and the tool is denied.
+Si ninguno de los pasos anteriores resuelve la solicitud, se llama al callback [`canUseTool`](./Handle%20approvals%20and%20user%20input.md) para tomar una decisión. En el modo `dontAsk`, este paso se omite y la herramienta se deniega.
 
-![Permission evaluation flow diagram](/docs/images/agent-sdk/permissions-flow.svg)
+![Diagrama de flujo de evaluación de permisos](/docs/images/agent-sdk/permissions-flow.svg)
 
-This page focuses on **allow and deny rules** and **permission modes**. For the other steps:
+Esta página se centra en las **reglas de allow y deny** y en los **modos de permisos**. Para los demás pasos:
 
-- **Hooks:** run custom code to allow, deny, or modify tool requests. See [Control execution with hooks](/docs/en/agent-sdk/hooks).
-- **canUseTool callback:** prompt users for approval at runtime. See [Handle approvals and user input](/docs/en/agent-sdk/user-input).
+- **Hooks:** ejecuta código personalizado para permitir, denegar o modificar solicitudes de herramientas. Consulta [Controlar la ejecución con hooks](./Intercept%20and%20control%20agent%20behavior%20with%20hooks.md).
+- **Callback canUseTool:** solicita aprobación a los usuarios en tiempo de ejecución. Consulta [Gestionar aprobaciones y entrada del usuario](./Handle%20approvals%20and%20user%20input.md).
 
-## Allow and deny rules
+## Reglas de allow y deny
 
-`allowed_tools` and `disallowed_tools` (TypeScript: `allowedTools` / `disallowedTools`) add entries to the allow and deny rule lists in the evaluation flow above. They control whether a tool call is approved, not whether the tool is available to Claude.
+`allowed_tools` y `disallowed_tools` (TypeScript: `allowedTools` / `disallowedTools`) añaden entradas a las listas de reglas de allow y deny en el flujo de evaluación descrito arriba. Controlan si se aprueba una llamada a herramienta, no si la herramienta está disponible para Claude.
 
-| Option | Effect |
+| Opción | Efecto |
 | :--- | :--- |
-| `allowed_tools=["Read", "Grep"]` | `Read` and `Grep` are auto-approved. Tools not listed here still exist and fall through to the permission mode and `canUseTool`. |
-| `disallowed_tools=["Bash"]` | `Bash` is always denied. Deny rules are checked first and hold in every permission mode, including `bypassPermissions`. |
+| `allowed_tools=["Read", "Grep"]` | `Read` y `Grep` se aprueban automáticamente. Las herramientas no listadas siguen existiendo y pasan al modo de permisos y a `canUseTool`. |
+| `disallowed_tools=["Bash"]` | `Bash` siempre se deniega. Las reglas de denegación se verifican primero y se mantienen en todos los modos de permisos, incluido `bypassPermissions`. |
 
-For a locked-down agent, pair `allowedTools` with `permissionMode: "dontAsk"` (TypeScript only). Listed tools are approved; anything else is denied outright instead of prompting:
+Para un agente con permisos restringidos, combina `allowedTools` con `permissionMode: "dontAsk"` (solo TypeScript). Las herramientas listadas se aprueban; cualquier otra se deniega directamente en lugar de solicitar confirmación:
 
 ```typescript
 const options = {
@@ -57,37 +57,37 @@ const options = {
 };
 ```
 
-In Python, `dontAsk` is not yet available as a permission mode. Without it, Claude may still attempt to call tools not in `allowed_tools`. The call is rejected at runtime, but Claude wastes a turn discovering this. For tighter control in Python, use `disallowed_tools` to explicitly block tools you don't want Claude to attempt.
+En Python, `dontAsk` aún no está disponible como modo de permisos. Sin él, Claude puede intentar llamar a herramientas que no están en `allowed_tools`. La llamada se rechaza en tiempo de ejecución, pero Claude desperdicia un turno descubriéndolo. Para un control más estricto en Python, usa `disallowed_tools` para bloquear explícitamente las herramientas que no quieres que Claude intente usar.
 
-> **Advertencia:** **`allowed_tools` does not constrain `bypassPermissions`.** `allowed_tools` only pre-approves the tools you list. Unlisted tools are not matched by any allow rule and fall through to the permission mode, where `bypassPermissions` approves them. Setting `allowed_tools=["Read"]` alongside `permission_mode="bypassPermissions"` still approves every tool, including `Bash`, `Write`, and `Edit`. If you need `bypassPermissions` but want specific tools blocked, use `disallowed_tools`.
+> **Advertencia:** **`allowed_tools` no restringe `bypassPermissions`.** `allowed_tools` solo aprueba previamente las herramientas que lista. Las herramientas no listadas no coinciden con ninguna regla de allow y pasan al modo de permisos, donde `bypassPermissions` las aprueba. Establecer `allowed_tools=["Read"]` junto con `permission_mode="bypassPermissions"` sigue aprobando todas las herramientas, incluyendo `Bash`, `Write` y `Edit`. Si necesitas `bypassPermissions` pero quieres bloquear herramientas específicas, usa `disallowed_tools`.
 
-You can also configure allow, deny, and ask rules declaratively in `.claude/settings.json`. The SDK does not load filesystem settings by default, so you must set `setting_sources=["project"]` (TypeScript: `settingSources: ["project"]`) in your options for these rules to apply. See [Permission settings](https://code.claude.com/docs/en/settings#permission-settings) for the rule syntax.
+También puedes configurar reglas de allow, deny y ask de forma declarativa en `.claude/settings.json`. El SDK no carga la configuración del sistema de archivos por defecto, por lo que debes establecer `setting_sources=["project"]` (TypeScript: `settingSources: ["project"]`) en tus opciones para que estas reglas se apliquen. Consulta [Configuración de permisos](https://code.claude.com/docs/en/settings#permission-settings) para conocer la sintaxis de las reglas.
 
-## Permission modes
+## Modos de permisos
 
-Permission modes provide global control over how Claude uses tools. You can set the permission mode when calling `query()` or change it dynamically during streaming sessions.
+Los modos de permisos ofrecen un control global sobre cómo Claude usa las herramientas. Puedes establecer el modo de permisos al llamar a `query()` o cambiarlo dinámicamente durante sesiones de streaming.
 
-### Available modes
+### Modos disponibles
 
-The SDK supports these permission modes:
+El SDK admite los siguientes modos de permisos:
 
-| Mode | Description | Tool behavior |
+| Modo | Descripción | Comportamiento de herramientas |
 | :--- | :---------- | :------------ |
-| `default` | Standard permission behavior | No auto-approvals; unmatched tools trigger your `canUseTool` callback |
-| `dontAsk` (TypeScript only) | Deny instead of prompting | Anything not pre-approved by `allowed_tools` or rules is denied; `canUseTool` is never called |
-| `acceptEdits` | Auto-accept file edits | File edits and [filesystem operations](#accept-edits-mode-acceptedits) (`mkdir`, `rm`, `mv`, etc.) are automatically approved |
-| `bypassPermissions` | Bypass all permission checks | All tools run without permission prompts (use with caution) |
-| `plan` | Planning mode | No tool execution; Claude plans without making changes |
+| `default` | Comportamiento de permisos estándar | Sin aprobaciones automáticas; las herramientas sin coincidencia activan tu callback `canUseTool` |
+| `dontAsk` (solo TypeScript) | Denegar en lugar de solicitar | Todo lo que no esté preaprobado por `allowed_tools` o reglas se deniega; `canUseTool` nunca se llama |
+| `acceptEdits` | Aceptar ediciones de archivos automáticamente | Las ediciones de archivos y las [operaciones del sistema de archivos](#modo-accept-edits-acceptedits) (`mkdir`, `rm`, `mv`, etc.) se aprueban automáticamente |
+| `bypassPermissions` | Omitir todas las verificaciones de permisos | Todas las herramientas se ejecutan sin solicitudes de permiso (usar con precaución) |
+| `plan` | Modo de planificación | Sin ejecución de herramientas; Claude planifica sin realizar cambios |
 
-> **Advertencia:** **Subagent inheritance:** When using `bypassPermissions`, all subagents inherit this mode and it cannot be overridden. Subagents may have different system prompts and less constrained behavior than your main agent. Enabling `bypassPermissions` grants them full, autonomous system access without any approval prompts.
+> **Advertencia:** **Herencia en subagentes:** Al usar `bypassPermissions`, todos los subagentes heredan este modo y no puede ser sobreescrito. Los subagentes pueden tener prompts de sistema diferentes y un comportamiento menos restringido que tu agente principal. Habilitar `bypassPermissions` les otorga acceso completo y autónomo al sistema sin ninguna solicitud de aprobación.
 
-### Set permission mode
+### Establecer el modo de permisos
 
-You can set the permission mode once when starting a query, or change it dynamically while the session is active.
+Puedes establecer el modo de permisos una vez al iniciar una consulta, o cambiarlo dinámicamente mientras la sesión está activa.
 
-#### At query time
+#### En el momento de la consulta
 
-Pass `permission_mode` (Python) or `permissionMode` (TypeScript) when creating a query. This mode applies for the entire session unless changed dynamically.
+Pasa `permission_mode` (Python) o `permissionMode` (TypeScript) al crear una consulta. Este modo se aplica durante toda la sesión, a menos que se cambie dinámicamente.
 
 **Python**
 ```python
@@ -129,9 +129,9 @@ async function main() {
 main();
 ```
 
-#### During streaming
+#### Durante el streaming
 
-Call `set_permission_mode()` (Python) or `setPermissionMode()` (TypeScript) to change the mode mid-session. The new mode takes effect immediately for all subsequent tool requests. This lets you start restrictive and loosen permissions as trust builds, for example switching to `acceptEdits` after reviewing Claude's initial approach.
+Llama a `set_permission_mode()` (Python) o `setPermissionMode()` (TypeScript) para cambiar el modo durante la sesión. El nuevo modo surte efecto inmediatamente para todas las solicitudes de herramientas posteriores. Esto te permite comenzar con restricciones y relajar los permisos a medida que se genera confianza; por ejemplo, cambiando a `acceptEdits` después de revisar el enfoque inicial de Claude.
 
 **Python**
 ```python
@@ -185,44 +185,44 @@ async function main() {
 main();
 ```
 
-### Mode details
+### Detalles de los modos
 
-#### Accept edits mode (`acceptEdits`)
+#### Modo accept edits (`acceptEdits`)
 
-Auto-approves file operations so Claude can edit code without prompting. Other tools (like Bash commands that aren't filesystem operations) still require normal permissions.
+Aprueba automáticamente las operaciones de archivo para que Claude pueda editar código sin solicitar confirmación. Las demás herramientas (como los comandos Bash que no son operaciones del sistema de archivos) siguen requiriendo los permisos normales.
 
-**Auto-approved operations:**
-- File edits (Edit, Write tools)
-- Filesystem commands: `mkdir`, `touch`, `rm`, `mv`, `cp`
+**Operaciones aprobadas automáticamente:**
+- Ediciones de archivos (herramientas Edit, Write)
+- Comandos del sistema de archivos: `mkdir`, `touch`, `rm`, `mv`, `cp`
 
-**Use when:** you trust Claude's edits and want faster iteration, such as during prototyping or when working in an isolated directory.
+**Cuándo usarlo:** cuando confías en las ediciones de Claude y quieres iterar más rápido, por ejemplo durante la creación de prototipos o cuando trabajas en un directorio aislado.
 
-#### Don't ask mode (`dontAsk`, TypeScript only)
+#### Modo don't ask (`dontAsk`, solo TypeScript)
 
-Converts any permission prompt into a denial. Tools pre-approved by `allowed_tools`, `settings.json` allow rules, or a hook run as normal. Everything else is denied without calling `canUseTool`.
+Convierte cualquier solicitud de permiso en una denegación. Las herramientas preaprobadas por `allowed_tools`, reglas de allow en `settings.json`, o un hook se ejecutan con normalidad. Todo lo demás se deniega sin llamar a `canUseTool`.
 
-**Use when:** you want a fixed, explicit tool surface for a headless agent and prefer a hard deny over silent reliance on `canUseTool` being absent.
+**Cuándo usarlo:** cuando quieres una superficie de herramientas fija y explícita para un agente sin interfaz y prefieres una denegación directa en lugar de depender en silencio de la ausencia de `canUseTool`.
 
-> **Nota:** `dontAsk` is available in the TypeScript SDK only. In Python, there is no exact equivalent. Use `disallowed_tools` to explicitly block tools you don't want Claude to use.
+> **Nota:** `dontAsk` solo está disponible en el SDK de TypeScript. En Python no existe un equivalente exacto. Usa `disallowed_tools` para bloquear explícitamente las herramientas que no quieres que Claude use.
 
-#### Bypass permissions mode (`bypassPermissions`)
+#### Modo bypass permissions (`bypassPermissions`)
 
-Auto-approves all tool uses without prompts. Hooks still execute and can block operations if needed.
+Aprueba automáticamente todos los usos de herramientas sin solicitudes. Los hooks siguen ejecutándose y pueden bloquear operaciones si es necesario.
 
-> **Advertencia:** Use with extreme caution. Claude has full system access in this mode. Only use in controlled environments where you trust all possible operations.
+> **Advertencia:** Usar con extrema precaución. Claude tiene acceso completo al sistema en este modo. Úsalo solo en entornos controlados donde confíes en todas las operaciones posibles.
 >
-> `allowed_tools` does not constrain this mode. Every tool is approved, not just the ones you listed. Deny rules (`disallowed_tools`), explicit `ask` rules, and hooks are evaluated before the mode check and can still block a tool.
+> `allowed_tools` no restringe este modo. Todas las herramientas se aprueban, no solo las que listaste. Las reglas de denegación (`disallowed_tools`), las reglas explícitas de `ask` y los hooks se evalúan antes de la verificación del modo y aún pueden bloquear una herramienta.
 
-#### Plan mode (`plan`)
+#### Modo plan (`plan`)
 
-Prevents tool execution entirely. Claude can analyze code and create plans but cannot make changes. Claude may use `AskUserQuestion` to clarify requirements before finalizing the plan. See [Handle approvals and user input](/docs/en/agent-sdk/user-input#handle-clarifying-questions) for handling these prompts.
+Impide la ejecución de herramientas por completo. Claude puede analizar código y crear planes, pero no puede realizar cambios. Claude puede usar `AskUserQuestion` para aclarar requisitos antes de finalizar el plan. Consulta [Gestionar aprobaciones y entrada del usuario](./Handle%20approvals%20and%20user%20input.md#handle-clarifying-questions) para saber cómo manejar estos prompts.
 
-**Use when:** you want Claude to propose changes without executing them, such as during code review or when you need to approve changes before they're made.
+**Cuándo usarlo:** cuando quieres que Claude proponga cambios sin ejecutarlos, por ejemplo durante la revisión de código o cuando necesitas aprobar los cambios antes de que se realicen.
 
-## Related resources
+## Recursos relacionados
 
-For the other steps in the permission evaluation flow:
+Para los demás pasos del flujo de evaluación de permisos:
 
-- [Handle approvals and user input](/docs/en/agent-sdk/user-input): interactive approval prompts and clarifying questions
-- [Hooks guide](/docs/en/agent-sdk/hooks): run custom code at key points in the agent lifecycle
-- [Permission rules](https://code.claude.com/docs/en/settings#permission-settings): declarative allow/deny rules in `settings.json`
+- [Gestionar aprobaciones y entrada del usuario](./Handle%20approvals%20and%20user%20input.md): prompts de aprobación interactivos y preguntas de aclaración
+- [Guía de hooks](./Intercept%20and%20control%20agent%20behavior%20with%20hooks.md): ejecuta código personalizado en puntos clave del ciclo de vida del agente
+- [Reglas de permisos](https://code.claude.com/docs/en/settings#permission-settings): reglas declarativas de allow/deny en `settings.json`

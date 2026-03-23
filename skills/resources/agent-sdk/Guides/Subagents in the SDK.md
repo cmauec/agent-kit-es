@@ -1,54 +1,54 @@
-# Subagents in the SDK
+# Subagentes en el SDK
 
-Define and invoke subagents to isolate context, run tasks in parallel, and apply specialized instructions in your Claude Agent SDK applications.
+Define e invoca subagentes para aislar el contexto, ejecutar tareas en paralelo y aplicar instrucciones especializadas en tus aplicaciones del Claude Agent SDK.
 
 ---
 
-Subagents are separate agent instances that your main agent can spawn to handle focused subtasks.
-Use subagents to isolate context for focused subtasks, run multiple analyses in parallel, and apply specialized instructions without bloating the main agent's prompt.
+Los subagentes son instancias de agente separadas que tu agente principal puede crear para manejar subtareas específicas.
+Usa subagentes para aislar el contexto en subtareas concretas, ejecutar múltiples análisis en paralelo y aplicar instrucciones especializadas sin sobrecargar el prompt del agente principal.
 
-This guide explains how to define and use subagents in the SDK using the `agents` parameter.
+Esta guía explica cómo definir y usar subagentes en el SDK mediante el parámetro `agents`.
 
-## Overview
+## Descripción general
 
-You can create subagents in three ways:
+Puedes crear subagentes de tres maneras:
 
-- **Programmatically**: use the `agents` parameter in your `query()` options ([TypeScript](/docs/en/agent-sdk/typescript#agent-definition), [Python](/docs/en/agent-sdk/python#agent-definition))
-- **Filesystem-based**: define agents as markdown files in `.claude/agents/` directories (see [defining subagents as files](https://code.claude.com/docs/en/sub-agents))
-- **Built-in general-purpose**: Claude can invoke the built-in `general-purpose` subagent at any time via the Agent tool without you defining anything
+- **Programáticamente**: usa el parámetro `agents` en las opciones de `query()` ([TypeScript](/docs/en/agent-sdk/typescript#agent-definition), [Python](/docs/en/agent-sdk/python#agent-definition))
+- **Basado en el sistema de archivos**: define agentes como archivos markdown en directorios `.claude/agents/` (consulta [definir subagentes como archivos](https://code.claude.com/docs/en/sub-agents))
+- **De propósito general integrado**: Claude puede invocar el subagente integrado `general-purpose` en cualquier momento a través de la herramienta Agent sin que tú definas nada
 
-This guide focuses on the programmatic approach, which is recommended for SDK applications.
+Esta guía se centra en el enfoque programático, que es el recomendado para aplicaciones con el SDK.
 
-When you define subagents, Claude determines whether to invoke them based on each subagent's `description` field. Write clear descriptions that explain when the subagent should be used, and Claude will automatically delegate appropriate tasks. You can also explicitly request a subagent by name in your prompt (for example, "Use the code-reviewer agent to...").
+Cuando defines subagentes, Claude decide si invocarlos según el campo `description` de cada uno. Escribe descripciones claras que expliquen cuándo debe usarse el subagente, y Claude delegará automáticamente las tareas adecuadas. También puedes solicitar explícitamente un subagente por nombre en tu prompt (por ejemplo, "Use the code-reviewer agent to...").
 
-## Benefits of using subagents
+## Ventajas de usar subagentes
 
-### Context isolation
+### Aislamiento de contexto
 
-Each subagent runs in its own fresh conversation. Intermediate tool calls and results stay inside the subagent; only its final message returns to the parent. See [What subagents inherit](#what-subagents-inherit) for exactly what's in the subagent's context.
+Cada subagente se ejecuta en su propia conversación nueva. Las llamadas intermedias a herramientas y sus resultados permanecen dentro del subagente; solo su mensaje final regresa al agente principal. Consulta [Qué heredan los subagentes](#what-subagents-inherit) para saber exactamente qué hay en el contexto del subagente.
 
-**Example:** a `research-assistant` subagent can explore dozens of files without any of that content accumulating in the main conversation. The parent receives a concise summary, not every file the subagent read.
+**Ejemplo:** un subagente `research-assistant` puede explorar docenas de archivos sin que ninguno de ese contenido se acumule en la conversación principal. El agente principal recibe un resumen conciso, no cada archivo que leyó el subagente.
 
-### Parallelization
-Multiple subagents can run concurrently, dramatically speeding up complex workflows.
+### Paralelización
+Múltiples subagentes pueden ejecutarse de forma concurrente, acelerando notablemente los flujos de trabajo complejos.
 
-**Example:** during a code review, you can run `style-checker`, `security-scanner`, and `test-coverage` subagents simultaneously, reducing review time from minutes to seconds.
+**Ejemplo:** durante una revisión de código, puedes ejecutar los subagentes `style-checker`, `security-scanner` y `test-coverage` simultáneamente, reduciendo el tiempo de revisión de minutos a segundos.
 
-### Specialized instructions and knowledge
-Each subagent can have tailored system prompts with specific expertise, best practices, and constraints.
+### Instrucciones y conocimiento especializados
+Cada subagente puede tener prompts de sistema personalizados con experiencia, mejores prácticas y restricciones específicas.
 
-**Example:** a `database-migration` subagent can have detailed knowledge about SQL best practices, rollback strategies, and data integrity checks that would be unnecessary noise in the main agent's instructions.
+**Ejemplo:** un subagente `database-migration` puede tener conocimiento detallado sobre las mejores prácticas de SQL, estrategias de rollback y verificaciones de integridad de datos que serían ruido innecesario en las instrucciones del agente principal.
 
-### Tool restrictions
-Subagents can be limited to specific tools, reducing the risk of unintended actions.
+### Restricciones de herramientas
+Los subagentes pueden limitarse a herramientas específicas, reduciendo el riesgo de acciones no deseadas.
 
-**Example:** a `doc-reviewer` subagent might only have access to Read and Grep tools, ensuring it can analyze but never accidentally modify your documentation files.
+**Ejemplo:** un subagente `doc-reviewer` podría tener acceso únicamente a las herramientas Read y Grep, asegurando que pueda analizar pero nunca modificar accidentalmente tus archivos de documentación.
 
-## Creating subagents
+## Creación de subagentes
 
-### Programmatic definition (recommended)
+### Definición programática (recomendada)
 
-Define subagents directly in your code using the `agents` parameter. This example creates two subagents: a code reviewer with read-only access and a test runner that can execute commands. The `Agent` tool must be included in `allowedTools` since Claude invokes subagents through the Agent tool.
+Define subagentes directamente en tu código usando el parámetro `agents`. Este ejemplo crea dos subagentes: un revisor de código con acceso de solo lectura y un ejecutor de pruebas que puede ejecutar comandos. La herramienta `Agent` debe incluirse en `allowedTools` ya que Claude invoca los subagentes a través de ella.
 
 **Python**
 ```python
@@ -152,56 +152,56 @@ Focus on:
 }
 ```
 
-### AgentDefinition configuration
+### Configuración de AgentDefinition
 
-| Field | Type | Required | Description |
+| Campo | Tipo | Requerido | Descripción |
 |:------|:-----|:---------|:------------|
-| `description` | `string` | Yes | Natural language description of when to use this agent |
-| `prompt` | `string` | Yes | The agent's system prompt defining its role and behavior |
-| `tools` | `string[]` | No | Array of allowed tool names. If omitted, inherits all tools |
-| `model` | `'sonnet' \| 'opus' \| 'haiku' \| 'inherit'` | No | Model override for this agent. Defaults to main model if omitted |
+| `description` | `string` | Sí | Descripción en lenguaje natural de cuándo usar este agente |
+| `prompt` | `string` | Sí | El prompt de sistema del agente que define su rol y comportamiento |
+| `tools` | `string[]` | No | Array de nombres de herramientas permitidas. Si se omite, hereda todas las herramientas |
+| `model` | `'sonnet' \| 'opus' \| 'haiku' \| 'inherit'` | No | Modelo a usar para este agente. Por defecto usa el modelo principal si se omite |
 
-> **Nota:** Subagents cannot spawn their own subagents. Don't include `Agent` in a subagent's `tools` array.
+> **Nota:** Los subagentes no pueden crear sus propios subagentes. No incluyas `Agent` en el array `tools` de un subagente.
 
-### Filesystem-based definition (alternative)
+### Definición basada en el sistema de archivos (alternativa)
 
-You can also define subagents as markdown files in `.claude/agents/` directories. See the [Claude Code subagents documentation](https://code.claude.com/docs/en/sub-agents) for details on this approach. Programmatically defined agents take precedence over filesystem-based agents with the same name.
+También puedes definir subagentes como archivos markdown en directorios `.claude/agents/`. Consulta la [documentación de subagentes de Claude Code](https://code.claude.com/docs/en/sub-agents) para más detalles sobre este enfoque. Los agentes definidos programáticamente tienen precedencia sobre los basados en archivos con el mismo nombre.
 
-> **Nota:** Even without defining custom subagents, Claude can spawn the built-in `general-purpose` subagent when `Agent` is in your `allowedTools`. This is useful for delegating research or exploration tasks without creating specialized agents.
+> **Nota:** Incluso sin definir subagentes personalizados, Claude puede crear el subagente integrado `general-purpose` cuando `Agent` está en tu `allowedTools`. Esto es útil para delegar tareas de investigación o exploración sin crear agentes especializados.
 
-## What subagents inherit
+## Qué heredan los subagentes
 
-A subagent's context window starts fresh (no parent conversation) but isn't empty. The only channel from parent to subagent is the Agent tool's prompt string, so include any file paths, error messages, or decisions the subagent needs directly in that prompt.
+La ventana de contexto de un subagente comienza vacía (sin conversación del agente principal), pero no está completamente en blanco. El único canal del agente principal al subagente es la cadena de texto del prompt de la herramienta Agent, por lo que debes incluir directamente en ese prompt cualquier ruta de archivo, mensaje de error o decisión que el subagente necesite.
 
-| The subagent receives | The subagent does not receive |
+| El subagente recibe | El subagente no recibe |
 |:---|:---|
-| Its own system prompt (`AgentDefinition.prompt`) and the Agent tool's prompt | The parent's conversation history or tool results |
-| Project CLAUDE.md (loaded via `settingSources`) | Skills (unless listed in `AgentDefinition.skills`, TypeScript only) |
-| Tool definitions (inherited from parent, or the subset in `tools`) | The parent's system prompt |
+| Su propio prompt de sistema (`AgentDefinition.prompt`) y el prompt de la herramienta Agent | El historial de conversación o los resultados de herramientas del agente principal |
+| El archivo CLAUDE.md del proyecto (cargado via `settingSources`) | Skills (a menos que estén listados en `AgentDefinition.skills`, solo TypeScript) |
+| Definiciones de herramientas (heredadas del agente principal, o el subconjunto en `tools`) | El prompt de sistema del agente principal |
 
-> **Nota:** The parent receives the subagent's final message verbatim as the Agent tool result, but may summarize it in its own response. To preserve subagent output verbatim in the user-facing response, include an instruction to do so in the prompt or `systemPrompt` option you pass to the **main** `query()` call.
+> **Nota:** El agente principal recibe el mensaje final del subagente tal cual como resultado de la herramienta Agent, pero puede resumirlo en su propia respuesta. Para preservar la salida del subagente de forma literal en la respuesta al usuario, incluye una instrucción al respecto en el prompt o en la opción `systemPrompt` que pasas a la llamada principal de `query()`.
 
-## Invoking subagents
+## Invocación de subagentes
 
-### Automatic invocation
+### Invocación automática
 
-Claude automatically decides when to invoke subagents based on the task and each subagent's `description`. For example, if you define a `performance-optimizer` subagent with the description "Performance optimization specialist for query tuning", Claude will invoke it when your prompt mentions optimizing queries.
+Claude decide automáticamente cuándo invocar subagentes según la tarea y la `description` de cada subagente. Por ejemplo, si defines un subagente `performance-optimizer` con la descripción "Performance optimization specialist for query tuning", Claude lo invocará cuando tu prompt mencione la optimización de consultas.
 
-Write clear, specific descriptions so Claude can match tasks to the right subagent.
+Escribe descripciones claras y específicas para que Claude pueda asignar las tareas al subagente correcto.
 
-### Explicit invocation
+### Invocación explícita
 
-To guarantee Claude uses a specific subagent, mention it by name in your prompt:
+Para garantizar que Claude use un subagente específico, menciónalo por nombre en tu prompt:
 
 ```text
 "Use the code-reviewer agent to check the authentication module"
 ```
 
-This bypasses automatic matching and directly invokes the named subagent.
+Esto evita la asignación automática e invoca directamente el subagente indicado.
 
-### Dynamic agent configuration
+### Configuración dinámica de agentes
 
-You can create agent definitions dynamically based on runtime conditions. This example creates a security reviewer with different strictness levels, using a more powerful model for strict reviews.
+Puedes crear definiciones de agentes dinámicamente según las condiciones en tiempo de ejecución. Este ejemplo crea un revisor de seguridad con distintos niveles de rigor, usando un modelo más potente para las revisiones más estrictas.
 
 **Python**
 ```python
@@ -275,15 +275,15 @@ for await (const message of query({
 }
 ```
 
-## Detecting subagent invocation
+## Detección de invocación de subagentes
 
-Subagents are invoked via the Agent tool. To detect when a subagent is invoked, check for `tool_use` blocks where `name` is `"Agent"`. Messages from within a subagent's context include a `parent_tool_use_id` field.
+Los subagentes se invocan a través de la herramienta Agent. Para detectar cuándo se invoca un subagente, comprueba los bloques `tool_use` donde `name` sea `"Agent"`. Los mensajes provenientes del contexto de un subagente incluyen un campo `parent_tool_use_id`.
 
-> **Nota:** The tool name was renamed from `"Task"` to `"Agent"` in Claude Code v2.1.63. Current SDK releases emit `"Agent"` in `tool_use` blocks but still use `"Task"` in the `system:init` tools list and in `result.permission_denials[].tool_name`. Checking both values in `block.name` ensures compatibility across SDK versions.
+> **Nota:** El nombre de la herramienta cambió de `"Task"` a `"Agent"` en Claude Code v2.1.63. Las versiones actuales del SDK emiten `"Agent"` en los bloques `tool_use`, pero aún usan `"Task"` en la lista de herramientas de `system:init` y en `result.permission_denials[].tool_name`. Verificar ambos valores en `block.name` garantiza compatibilidad entre versiones del SDK.
 
-This example iterates through streamed messages, logging when a subagent is invoked and when subsequent messages originate from within that subagent's execution context.
+Este ejemplo itera sobre los mensajes en streaming, registrando cuándo se invoca un subagente y cuándo los mensajes posteriores provienen del contexto de ejecución de ese subagente.
 
-> **Nota:** The message structure differs between SDKs. In Python, content blocks are accessed directly via `message.content`. In TypeScript, `SDKAssistantMessage` wraps the Claude API message, so content is accessed via `message.message.content`.
+> **Nota:** La estructura de los mensajes difiere entre SDKs. En Python, los bloques de contenido se acceden directamente mediante `message.content`. En TypeScript, `SDKAssistantMessage` envuelve el mensaje de la API de Claude, por lo que el contenido se accede mediante `message.message.content`.
 
 **Python**
 ```python
@@ -364,21 +364,21 @@ for await (const message of query({
 }
 ```
 
-## Resuming subagents
+## Reanudación de subagentes
 
-Subagents can be resumed to continue where they left off. Resumed subagents retain their full conversation history, including all previous tool calls, results, and reasoning. The subagent picks up exactly where it stopped rather than starting fresh.
+Los subagentes pueden reanudarse para continuar donde se detuvieron. Los subagentes reanudados retienen todo su historial de conversación, incluyendo todas las llamadas a herramientas, resultados y razonamiento previos. El subagente retoma exactamente donde se detuvo en lugar de comenzar de nuevo.
 
-When a subagent completes, Claude receives its agent ID in the Agent tool result. To resume a subagent programmatically:
+Cuando un subagente completa su tarea, Claude recibe su ID de agente en el resultado de la herramienta Agent. Para reanudar un subagente programáticamente:
 
-1. **Capture the session ID**: Extract `session_id` from messages during the first query
-2. **Extract the agent ID**: Parse `agentId` from the message content
-3. **Resume the session**: Pass `resume: sessionId` in the second query's options, and include the agent ID in your prompt
+1. **Captura el ID de sesión**: extrae `session_id` de los mensajes durante la primera consulta
+2. **Extrae el ID del agente**: analiza `agentId` del contenido del mensaje
+3. **Reanuda la sesión**: pasa `resume: sessionId` en las opciones de la segunda consulta e incluye el ID del agente en tu prompt
 
-> **Nota:** You must resume the same session to access the subagent's transcript. Each `query()` call starts a new session by default, so pass `resume: sessionId` to continue in the same session.
+> **Nota:** Debes reanudar la misma sesión para acceder a la transcripción del subagente. Cada llamada a `query()` inicia una nueva sesión por defecto, así que pasa `resume: sessionId` para continuar en la misma sesión.
 >
-> If you're using a custom agent (not a built-in one), you also need to pass the same agent definition in the `agents` parameter for both queries.
+> Si usas un agente personalizado (no uno integrado), también debes pasar la misma definición de agente en el parámetro `agents` en ambas consultas.
 
-The example below demonstrates this flow: the first query runs a subagent and captures the session ID and agent ID, then the second query resumes the session to ask a follow-up question that requires context from the first analysis.
+El ejemplo a continuación muestra este flujo: la primera consulta ejecuta un subagente y captura el ID de sesión y el ID del agente; luego la segunda consulta reanuda la sesión para hacer una pregunta de seguimiento que requiere contexto del primer análisis.
 
 **TypeScript**
 ```typescript
@@ -474,20 +474,20 @@ async def main():
 asyncio.run(main())
 ```
 
-Subagent transcripts persist independently of the main conversation:
+Las transcripciones de los subagentes persisten de forma independiente a la conversación principal:
 
-- **Main conversation compaction**: When the main conversation compacts, subagent transcripts are unaffected. They're stored in separate files.
-- **Session persistence**: Subagent transcripts persist within their session. You can resume a subagent after restarting Claude Code by resuming the same session.
-- **Automatic cleanup**: Transcripts are cleaned up based on the `cleanupPeriodDays` setting (default: 30 days).
+- **Compactación de la conversación principal**: cuando la conversación principal se compacta, las transcripciones de los subagentes no se ven afectadas. Se almacenan en archivos separados.
+- **Persistencia de sesión**: las transcripciones de los subagentes persisten dentro de su sesión. Puedes reanudar un subagente después de reiniciar Claude Code reanudando la misma sesión.
+- **Limpieza automática**: las transcripciones se eliminan según la configuración `cleanupPeriodDays` (por defecto: 30 días).
 
-## Tool restrictions
+## Restricciones de herramientas
 
-Subagents can have restricted tool access via the `tools` field:
+Los subagentes pueden tener acceso restringido a herramientas mediante el campo `tools`:
 
-- **Omit the field**: agent inherits all available tools (default)
-- **Specify tools**: agent can only use listed tools
+- **Omitir el campo**: el agente hereda todas las herramientas disponibles (valor por defecto)
+- **Especificar herramientas**: el agente solo puede usar las herramientas indicadas
 
-This example creates a read-only analysis agent that can examine code but cannot modify files or run commands.
+Este ejemplo crea un agente de análisis de solo lectura que puede examinar código pero no modificar archivos ni ejecutar comandos.
 
 **Python**
 ```python
@@ -541,34 +541,34 @@ identify patterns, and suggest improvements without making changes.`,
 }
 ```
 
-### Common tool combinations
+### Combinaciones de herramientas comunes
 
-| Use case | Tools | Description |
+| Caso de uso | Herramientas | Descripción |
 |:---------|:------|:------------|
-| Read-only analysis | `Read`, `Grep`, `Glob` | Can examine code but not modify or execute |
-| Test execution | `Bash`, `Read`, `Grep` | Can run commands and analyze output |
-| Code modification | `Read`, `Edit`, `Write`, `Grep`, `Glob` | Full read/write access without command execution |
-| Full access | All tools | Inherits all tools from parent (omit `tools` field) |
+| Análisis de solo lectura | `Read`, `Grep`, `Glob` | Puede examinar código pero no modificarlo ni ejecutar comandos |
+| Ejecución de pruebas | `Bash`, `Read`, `Grep` | Puede ejecutar comandos y analizar la salida |
+| Modificación de código | `Read`, `Edit`, `Write`, `Grep`, `Glob` | Acceso completo de lectura/escritura sin ejecución de comandos |
+| Acceso completo | Todas las herramientas | Hereda todas las herramientas del agente principal (omite el campo `tools`) |
 
-## Troubleshooting
+## Solución de problemas
 
-### Claude not delegating to subagents
+### Claude no delega en los subagentes
 
-If Claude completes tasks directly instead of delegating to your subagent:
+Si Claude completa las tareas directamente en lugar de delegar en tu subagente:
 
-1. **Include the Agent tool**: subagents are invoked via the Agent tool, so it must be in `allowedTools`
-2. **Use explicit prompting**: mention the subagent by name in your prompt (for example, "Use the code-reviewer agent to...")
-3. **Write a clear description**: explain exactly when the subagent should be used so Claude can match tasks appropriately
+1. **Incluye la herramienta Agent**: los subagentes se invocan a través de la herramienta Agent, por lo que debe estar en `allowedTools`
+2. **Usa un prompt explícito**: menciona el subagente por nombre en tu prompt (por ejemplo, "Use the code-reviewer agent to...")
+3. **Escribe una descripción clara**: explica exactamente cuándo debe usarse el subagente para que Claude pueda asignar las tareas correctamente
 
-### Filesystem-based agents not loading
+### Los agentes basados en el sistema de archivos no se cargan
 
-Agents defined in `.claude/agents/` are loaded at startup only. If you create a new agent file while Claude Code is running, restart the session to load it.
+Los agentes definidos en `.claude/agents/` se cargan únicamente al inicio. Si creas un nuevo archivo de agente mientras Claude Code está en ejecución, reinicia la sesión para cargarlo.
 
-### Windows: long prompt failures
+### Windows: fallos con prompts muy largos
 
-On Windows, subagents with very long prompts may fail due to command line length limits (8191 chars). Keep prompts concise or use filesystem-based agents for complex instructions.
+En Windows, los subagentes con prompts muy largos pueden fallar debido a los límites de longitud de la línea de comandos (8191 caracteres). Mantén los prompts concisos o usa agentes basados en el sistema de archivos para instrucciones complejas.
 
-## Related documentation
+## Documentación relacionada
 
-- [Claude Code subagents](https://code.claude.com/docs/en/sub-agents): comprehensive subagent documentation including filesystem-based definitions
-- [SDK overview](/docs/en/agent-sdk/overview): getting started with the Claude Agent SDK
+- [Subagentes de Claude Code](https://code.claude.com/docs/en/sub-agents): documentación completa sobre subagentes, incluidas las definiciones basadas en el sistema de archivos
+- [Descripción general del SDK](../Agent%20SDK%20overview.md): primeros pasos con el Claude Agent SDK

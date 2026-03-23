@@ -1,12 +1,12 @@
-# Agent SDK overview
+# Descripción general del Agent SDK
 
-Build production AI agents with Claude Code as a library
+Construye agentes de IA en producción con Claude Code como biblioteca
 
 ---
 
-> **Nota:** The Claude Code SDK has been renamed to the Claude Agent SDK. If you're migrating from the old SDK, see the [Migration Guide](/docs/en/agent-sdk/migration-guide).
+> **Nota:** El Claude Code SDK ha sido renombrado a Claude Agent SDK. Si estás migrando desde el SDK anterior, consulta la [Guía de migración](/docs/en/agent-sdk/migration-guide).
 
-Build AI agents that autonomously read files, run commands, search the web, edit code, and more. The Agent SDK gives you the same tools, agent loop, and context management that power Claude Code, programmable in Python and TypeScript.
+Construye agentes de IA que de forma autónoma lean archivos, ejecuten comandos, busquen en la web, editen código y más. El Agent SDK te brinda las mismas herramientas, el mismo bucle de agente y la misma gestión de contexto que impulsan Claude Code, programables en Python y TypeScript.
 
 **Python**
 ```python
@@ -37,14 +37,14 @@ for await (const message of query({
 }
 ```
 
-The Agent SDK includes built-in tools for reading files, running commands, and editing code, so your agent can start working immediately without you implementing tool execution. Dive into the quickstart or explore real agents built with the SDK:
+El Agent SDK incluye herramientas integradas para leer archivos, ejecutar comandos y editar código, por lo que tu agente puede comenzar a trabajar de inmediato sin que necesites implementar la ejecución de herramientas. Sumérgete en el inicio rápido o explora agentes reales construidos con el SDK:
 
-- [Quickstart](/docs/en/agent-sdk/quickstart) — Build a bug-fixing agent in minutes
-- [Example agents](https://github.com/anthropics/claude-agent-sdk-demos) — Email assistant, research agent, and more
+- [Inicio rápido](./Quickstart.md) — Construye un agente que corrige errores en minutos
+- [Agentes de ejemplo](https://github.com/anthropics/claude-agent-sdk-demos) — Asistente de correo electrónico, agente de investigación y más
 
-## Get started
+## Primeros pasos
 
-### 1. Install the SDK
+### 1. Instala el SDK
 
 **TypeScript**
 ```bash
@@ -56,27 +56,27 @@ npm install @anthropic-ai/claude-agent-sdk
 pip install claude-agent-sdk
 ```
 
-### 2. Set your API key
+### 2. Configura tu API key
 
-Get an API key from the [Console](https://platform.claude.com/), then set it as an environment variable:
+Obtén una API key desde la [Consola](https://platform.claude.com/), y luego defínela como variable de entorno:
 
 ```bash
 export ANTHROPIC_API_KEY=your-api-key
 ```
 
-The SDK also supports authentication via third-party API providers:
+El SDK también admite autenticación a través de proveedores de API de terceros:
 
-- **Amazon Bedrock**: set `CLAUDE_CODE_USE_BEDROCK=1` environment variable and configure AWS credentials
-- **Google Vertex AI**: set `CLAUDE_CODE_USE_VERTEX=1` environment variable and configure Google Cloud credentials
-- **Microsoft Azure**: set `CLAUDE_CODE_USE_FOUNDRY=1` environment variable and configure Azure credentials
+- **Amazon Bedrock**: define la variable de entorno `CLAUDE_CODE_USE_BEDROCK=1` y configura las credenciales de AWS
+- **Google Vertex AI**: define la variable de entorno `CLAUDE_CODE_USE_VERTEX=1` y configura las credenciales de Google Cloud
+- **Microsoft Azure**: define la variable de entorno `CLAUDE_CODE_USE_FOUNDRY=1` y configura las credenciales de Azure
 
-See the setup guides for [Bedrock](https://code.claude.com/docs/en/amazon-bedrock), [Vertex AI](https://code.claude.com/docs/en/google-vertex-ai), or [Azure AI Foundry](https://code.claude.com/docs/en/azure-ai-foundry) for details.
+Consulta las guías de configuración para [Bedrock](https://code.claude.com/docs/en/amazon-bedrock), [Vertex AI](https://code.claude.com/docs/en/google-vertex-ai) o [Azure AI Foundry](https://code.claude.com/docs/en/azure-ai-foundry) para más detalles.
 
-> **Nota:** Unless previously approved, Anthropic does not allow third party developers to offer claude.ai login or rate limits for their products, including agents built on the Claude Agent SDK. Please use the API key authentication methods described in this document instead.
+> **Nota:** Salvo aprobación previa, Anthropic no permite que desarrolladores de terceros ofrezcan el inicio de sesión de claude.ai ni sus límites de uso para sus productos, incluidos los agentes construidos sobre el Claude Agent SDK. Utiliza en cambio los métodos de autenticación mediante API key descritos en este documento.
 
-### 3. Run your first agent
+### 3. Ejecuta tu primer agente
 
-This example creates an agent that lists files in your current directory using built-in tools.
+Este ejemplo crea un agente que lista los archivos en tu directorio actual usando herramientas integradas.
 
 **Python**
 ```python
@@ -108,29 +108,29 @@ for await (const message of query({
 }
 ```
 
-**Ready to build?** Follow the [Quickstart](/docs/en/agent-sdk/quickstart) to create an agent that finds and fixes bugs in minutes.
+**¿Listo para construir?** Sigue el [Inicio rápido](./Quickstart.md) para crear un agente que encuentre y corrija errores en minutos.
 
-## Capabilities
+## Capacidades
 
-Everything that makes Claude Code powerful is available in the SDK:
+Todo lo que hace poderoso a Claude Code está disponible en el SDK:
 
-### Built-in tools
+### Herramientas integradas
 
-Your agent can read files, run commands, and search codebases out of the box. Key tools include:
+Tu agente puede leer archivos, ejecutar comandos y buscar en bases de código de forma inmediata. Las herramientas principales incluyen:
 
-| Tool | What it does |
-|------|--------------|
-| **Read** | Read any file in the working directory |
-| **Write** | Create new files |
-| **Edit** | Make precise edits to existing files |
-| **Bash** | Run terminal commands, scripts, git operations |
-| **Glob** | Find files by pattern (`**/*.ts`, `src/**/*.py`) |
-| **Grep** | Search file contents with regex |
-| **WebSearch** | Search the web for current information |
-| **WebFetch** | Fetch and parse web page content |
-| **[AskUserQuestion](/docs/en/agent-sdk/user-input#handle-clarifying-questions)** | Ask the user clarifying questions with multiple choice options |
+| Herramienta | Qué hace |
+|-------------|----------|
+| **Read** | Lee cualquier archivo en el directorio de trabajo |
+| **Write** | Crea nuevos archivos |
+| **Edit** | Realiza ediciones precisas en archivos existentes |
+| **Bash** | Ejecuta comandos de terminal, scripts, operaciones de git |
+| **Glob** | Busca archivos por patrón (`**/*.ts`, `src/**/*.py`) |
+| **Grep** | Busca contenido en archivos con regex |
+| **WebSearch** | Busca en la web información actualizada |
+| **WebFetch** | Obtiene y analiza el contenido de páginas web |
+| **[AskUserQuestion](./Guides/Handle%20approvals%20and%20user%20input.md#handle-clarifying-questions)** | Formula preguntas de aclaración al usuario con opciones de respuesta múltiple |
 
-This example creates an agent that searches your codebase for TODO comments:
+Este ejemplo crea un agente que busca comentarios TODO en tu base de código:
 
 **Python**
 ```python
@@ -164,11 +164,11 @@ for await (const message of query({
 
 ### Hooks
 
-Run custom code at key points in the agent lifecycle. SDK hooks use callback functions to validate, log, block, or transform agent behavior.
+Ejecuta código personalizado en puntos clave del ciclo de vida del agente. Los hooks del SDK utilizan funciones de callback para validar, registrar, bloquear o transformar el comportamiento del agente.
 
-**Available hooks:** `PreToolUse`, `PostToolUse`, `Stop`, `SessionStart`, `SessionEnd`, `UserPromptSubmit`, and more.
+**Hooks disponibles:** `PreToolUse`, `PostToolUse`, `Stop`, `SessionStart`, `SessionEnd`, `UserPromptSubmit` y más.
 
-This example logs all file changes to an audit file:
+Este ejemplo registra todos los cambios de archivos en un archivo de auditoría:
 
 **Python**
 ```python
@@ -227,13 +227,13 @@ for await (const message of query({
 }
 ```
 
-[Learn more about hooks →](/docs/en/agent-sdk/hooks)
+[Más información sobre hooks →](./Guides/Intercept%20and%20control%20agent%20behavior%20with%20hooks.md)
 
-### Subagents
+### Subagentes
 
-Spawn specialized agents to handle focused subtasks. Your main agent delegates work, and subagents report back with results.
+Crea agentes especializados para manejar subtareas concretas. Tu agente principal delega el trabajo y los subagentes devuelven los resultados.
 
-Define custom agents with specialized instructions. Include `Agent` in `allowedTools` since subagents are invoked via the Agent tool:
+Define agentes personalizados con instrucciones especializadas. Incluye `Agent` en `allowedTools` ya que los subagentes se invocan a través de la herramienta Agent:
 
 **Python**
 ```python
@@ -283,15 +283,15 @@ for await (const message of query({
 }
 ```
 
-Messages from within a subagent's context include a `parent_tool_use_id` field, letting you track which messages belong to which subagent execution.
+Los mensajes provenientes del contexto de un subagente incluyen un campo `parent_tool_use_id`, lo que te permite rastrear a qué ejecución de subagente pertenece cada mensaje.
 
-[Learn more about subagents →](/docs/en/agent-sdk/subagents)
+[Más información sobre subagentes →](./Guides/Subagents%20in%20the%20SDK.md)
 
 ### MCP
 
-Connect to external systems via the Model Context Protocol: databases, browsers, APIs, and [hundreds more](https://github.com/modelcontextprotocol/servers).
+Conéctate a sistemas externos mediante el Model Context Protocol: bases de datos, navegadores, APIs y [cientos más](https://github.com/modelcontextprotocol/servers).
 
-This example connects the [Playwright MCP server](https://github.com/microsoft/playwright-mcp) to give your agent browser automation capabilities:
+Este ejemplo conecta el [servidor MCP de Playwright](https://github.com/microsoft/playwright-mcp) para dotar a tu agente de capacidades de automatización del navegador:
 
 **Python**
 ```python
@@ -331,15 +331,15 @@ for await (const message of query({
 }
 ```
 
-[Learn more about MCP →](/docs/en/agent-sdk/mcp)
+[Más información sobre MCP →](./Guides/Connect%20to%20external%20tools%20with%20MCP.md)
 
-### Permissions
+### Permisos
 
-Control exactly which tools your agent can use. Allow safe operations, block dangerous ones, or require approval for sensitive actions.
+Controla exactamente qué herramientas puede usar tu agente. Permite operaciones seguras, bloquea las peligrosas o requiere aprobación para acciones sensibles.
 
-> **Nota:** For interactive approval prompts and the `AskUserQuestion` tool, see [Handle approvals and user input](/docs/en/agent-sdk/user-input).
+> **Nota:** Para los prompts de aprobación interactiva y la herramienta `AskUserQuestion`, consulta [Gestionar aprobaciones y entrada del usuario](./Guides/Handle%20approvals%20and%20user%20input.md).
 
-This example creates a read-only agent that can analyze but not modify code. `allowed_tools` pre-approves `Read`, `Glob`, and `Grep`.
+Este ejemplo crea un agente de solo lectura que puede analizar pero no modificar el código. `allowed_tools` preaprueba `Read`, `Glob` y `Grep`.
 
 **Python**
 ```python
@@ -375,13 +375,13 @@ for await (const message of query({
 }
 ```
 
-[Learn more about permissions →](/docs/en/agent-sdk/permissions)
+[Más información sobre permisos →](./Guides/Configure%20permissions.md)
 
-### Sessions
+### Sesiones
 
-Maintain context across multiple exchanges. Claude remembers files read, analysis done, and conversation history. Resume sessions later, or fork them to explore different approaches.
+Mantén el contexto a través de múltiples intercambios. Claude recuerda los archivos leídos, el análisis realizado y el historial de conversación. Reanuda sesiones más tarde o bifúrcalas para explorar diferentes enfoques.
 
-This example captures the session ID from the first query, then resumes to continue with full context:
+Este ejemplo captura el ID de sesión de la primera consulta y luego lo reanuda para continuar con el contexto completo:
 
 **Python**
 ```python
@@ -437,28 +437,28 @@ for await (const message of query({
 }
 ```
 
-[Learn more about sessions →](/docs/en/agent-sdk/sessions)
+[Más información sobre sesiones →](./Core%20concepts/Work%20with%20sessions.md)
 
-### Claude Code features
+### Funcionalidades de Claude Code
 
-The SDK also supports Claude Code's filesystem-based configuration. To use these features, set `setting_sources=["project"]` (Python) or `settingSources: ['project']` (TypeScript) in your options.
+El SDK también admite la configuración basada en el sistema de archivos de Claude Code. Para usar estas funcionalidades, define `setting_sources=["project"]` (Python) o `settingSources: ['project']` (TypeScript) en tus opciones.
 
-| Feature | Description | Location |
-|---------|-------------|----------|
-| [Skills](/docs/en/agent-sdk/skills) | Specialized capabilities defined in Markdown | `.claude/skills/SKILL.md` |
-| [Slash commands](/docs/en/agent-sdk/slash-commands) | Custom commands for common tasks | `.claude/commands/*.md` |
-| [Memory](/docs/en/agent-sdk/modifying-system-prompts) | Project context and instructions | `CLAUDE.md` or `.claude/CLAUDE.md` |
-| [Plugins](/docs/en/agent-sdk/plugins) | Extend with custom commands, agents, and MCP servers | Programmatic via `plugins` option |
+| Funcionalidad | Descripción | Ubicación |
+|---------------|-------------|-----------|
+| [Skills](./Guides/Agent%20Skills%20in%20the%20SDK.md) | Capacidades especializadas definidas en Markdown | `.claude/skills/SKILL.md` |
+| [Slash commands](./Guides/Slash%20Commands%20in%20the%20SDK.md) | Comandos personalizados para tareas comunes | `.claude/commands/*.md` |
+| [Memory](./Guides/Modifying%20system%20prompts.md) | Contexto e instrucciones del proyecto | `CLAUDE.md` o `.claude/CLAUDE.md` |
+| [Plugins](./Guides/Plugins%20in%20the%20SDK.md) | Extiende con comandos, agentes y servidores MCP personalizados | Programático mediante la opción `plugins` |
 
-## Compare the Agent SDK to other Claude tools
+## Comparación del Agent SDK con otras herramientas de Claude
 
-The Claude platform offers multiple ways to build with Claude. Here's how the Agent SDK fits in:
+La plataforma de Claude ofrece múltiples formas de construir con Claude. Así es como encaja el Agent SDK:
 
 ### Agent SDK vs Client SDK
 
-The [Anthropic Client SDK](/docs/en/api/client-sdks) gives you direct API access: you send prompts and implement tool execution yourself. The **Agent SDK** gives you Claude with built-in tool execution.
+El [Anthropic Client SDK](/docs/en/api/client-sdks) te da acceso directo a la API: tú envías prompts e implementas la ejecución de herramientas por tu cuenta. El **Agent SDK** te ofrece Claude con ejecución de herramientas integrada.
 
-With the Client SDK, you implement a tool loop. With the Agent SDK, Claude handles it:
+Con el Client SDK, tú implementas el bucle de herramientas. Con el Agent SDK, Claude lo gestiona:
 
 **Python**
 ```python
@@ -490,54 +490,54 @@ for await (const message of query({ prompt: "Fix the bug in auth.py" })) {
 
 ### Agent SDK vs Claude Code CLI
 
-Same capabilities, different interface:
+Las mismas capacidades, diferente interfaz:
 
-| Use case | Best choice |
-|----------|-------------|
-| Interactive development | CLI |
-| CI/CD pipelines | SDK |
-| Custom applications | SDK |
-| One-off tasks | CLI |
-| Production automation | SDK |
+| Caso de uso | Mejor opción |
+|-------------|-------------|
+| Desarrollo interactivo | CLI |
+| Pipelines de CI/CD | SDK |
+| Aplicaciones personalizadas | SDK |
+| Tareas puntuales | CLI |
+| Automatización en producción | SDK |
 
-Many teams use both: CLI for daily development, SDK for production. Workflows translate directly between them.
+Muchos equipos usan ambos: CLI para el desarrollo diario, SDK para producción. Los flujos de trabajo se trasladan directamente entre ellos.
 
 ## Changelog
 
-View the full changelog for SDK updates, bug fixes, and new features:
+Consulta el changelog completo para actualizaciones del SDK, correcciones de errores y nuevas funcionalidades:
 
-- **TypeScript SDK**: [view CHANGELOG.md](https://github.com/anthropics/claude-agent-sdk-typescript/blob/main/CHANGELOG.md)
-- **Python SDK**: [view CHANGELOG.md](https://github.com/anthropics/claude-agent-sdk-python/blob/main/CHANGELOG.md)
+- **TypeScript SDK**: [ver CHANGELOG.md](https://github.com/anthropics/claude-agent-sdk-typescript/blob/main/CHANGELOG.md)
+- **Python SDK**: [ver CHANGELOG.md](https://github.com/anthropics/claude-agent-sdk-python/blob/main/CHANGELOG.md)
 
-## Reporting bugs
+## Reportar errores
 
-If you encounter bugs or issues with the Agent SDK:
+Si encuentras bugs o problemas con el Agent SDK:
 
-- **TypeScript SDK**: [report issues on GitHub](https://github.com/anthropics/claude-agent-sdk-typescript/issues)
-- **Python SDK**: [report issues on GitHub](https://github.com/anthropics/claude-agent-sdk-python/issues)
+- **TypeScript SDK**: [reportar problemas en GitHub](https://github.com/anthropics/claude-agent-sdk-typescript/issues)
+- **Python SDK**: [reportar problemas en GitHub](https://github.com/anthropics/claude-agent-sdk-python/issues)
 
-## Branding guidelines
+## Directrices de marca
 
-For partners integrating the Claude Agent SDK, use of Claude branding is optional. When referencing Claude in your product:
+Para los socios que integran el Claude Agent SDK, el uso de la marca Claude es opcional. Cuando hagas referencia a Claude en tu producto:
 
-**Allowed:**
-- "Claude Agent" (preferred for dropdown menus)
-- "Claude" (when within a menu already labeled "Agents")
-- "{YourAgentName} Powered by Claude" (if you have an existing agent name)
+**Permitido:**
+- "Claude Agent" (preferido para menús desplegables)
+- "Claude" (cuando está dentro de un menú ya etiquetado como "Agents")
+- "{NombreDeAgente} Powered by Claude" (si ya tienes un nombre de agente existente)
 
-**Not permitted:**
-- "Claude Code" or "Claude Code Agent"
-- Claude Code-branded ASCII art or visual elements that mimic Claude Code
+**No permitido:**
+- "Claude Code" o "Claude Code Agent"
+- Arte ASCII con la marca de Claude Code o elementos visuales que imiten a Claude Code
 
-Your product should maintain its own branding and not appear to be Claude Code or any Anthropic product. For questions about branding compliance, contact the Anthropic [sales team](https://www.anthropic.com/contact-sales).
+Tu producto debe mantener su propia identidad de marca y no debe aparentar ser Claude Code ni ningún producto de Anthropic. Para preguntas sobre cumplimiento de marca, contacta al [equipo de ventas](https://www.anthropic.com/contact-sales) de Anthropic.
 
-## License and terms
+## Licencia y términos
 
-Use of the Claude Agent SDK is governed by [Anthropic's Commercial Terms of Service](https://www.anthropic.com/legal/commercial-terms), including when you use it to power products and services that you make available to your own customers and end users, except to the extent a specific component or dependency is covered by a different license as indicated in that component's LICENSE file.
+El uso del Claude Agent SDK está regido por los [Términos de Servicio Comerciales de Anthropic](https://www.anthropic.com/legal/commercial-terms), incluso cuando lo uses para impulsar productos y servicios que pones a disposición de tus propios clientes y usuarios finales, excepto en la medida en que un componente o dependencia específica esté cubierta por una licencia diferente según se indique en el archivo LICENSE de ese componente.
 
-## Next steps
+## Próximos pasos
 
-- [Quickstart](/docs/en/agent-sdk/quickstart) — Build an agent that finds and fixes bugs in minutes
-- [Example agents](https://github.com/anthropics/claude-agent-sdk-demos) — Email assistant, research agent, and more
-- [TypeScript SDK](/docs/en/agent-sdk/typescript) — Full TypeScript API reference and examples
-- [Python SDK](/docs/en/agent-sdk/python) — Full Python API reference and examples
+- [Inicio rápido](./Quickstart.md) — Construye un agente que encuentre y corrija errores en minutos
+- [Agentes de ejemplo](https://github.com/anthropics/claude-agent-sdk-demos) — Asistente de correo electrónico, agente de investigación y más
+- [TypeScript SDK](/docs/en/agent-sdk/typescript) — Referencia completa de la API de TypeScript y ejemplos
+- [Python SDK](/docs/en/agent-sdk/python) — Referencia completa de la API de Python y ejemplos

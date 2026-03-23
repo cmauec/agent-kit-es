@@ -1,20 +1,20 @@
-# Use Claude Code features in the SDK
+# Usar las funcionalidades de Claude Code en el SDK
 
-Load project instructions, skills, hooks, and other Claude Code features into your SDK agents.
+Carga instrucciones de proyecto, skills, hooks y otras funcionalidades de Claude Code en tus agentes del SDK.
 
 ---
 
-The Agent SDK is built on the same foundation as Claude Code, which means your SDK agents have access to the same filesystem-based features: project instructions (`CLAUDE.md` and rules), skills, hooks, and more.
+El Agent SDK está construido sobre la misma base que Claude Code, lo que significa que tus agentes del SDK tienen acceso a las mismas funcionalidades basadas en el sistema de archivos: instrucciones de proyecto (`CLAUDE.md` y reglas), skills, hooks y más.
 
-By default, the SDK loads no filesystem settings. Your agent runs in isolation mode with only what you pass programmatically. To load CLAUDE.md, skills, or filesystem hooks, set `settingSources` to tell the SDK where to look.
+Por defecto, el SDK no carga ninguna configuración del sistema de archivos. Tu agente se ejecuta en modo aislado solo con lo que le pasas de forma programática. Para cargar CLAUDE.md, skills o hooks del sistema de archivos, configura `settingSources` para indicarle al SDK dónde buscar.
 
-For a conceptual overview of what each feature does and when to use it, see [Extend Claude Code](https://code.claude.com/docs/en/features-overview).
+Para una visión conceptual de lo que hace cada funcionalidad y cuándo usarla, consulta [Extend Claude Code](https://code.claude.com/docs/en/features-overview).
 
-## Enable Claude Code features with settingSources
+## Habilitar las funcionalidades de Claude Code con settingSources
 
-The setting sources option ([`setting_sources`](/docs/en/agent-sdk/python#claude-agent-options) in Python, [`settingSources`](/docs/en/agent-sdk/typescript#setting-source) in TypeScript) controls which filesystem-based settings the SDK loads. Without it, your agent won't discover skills, `CLAUDE.md` files, or project-level hooks.
+La opción de fuentes de configuración (`setting_sources` en Python, `settingSources` en TypeScript) controla qué configuraciones basadas en el sistema de archivos carga el SDK. Sin ella, tu agente no descubrirá skills, archivos `CLAUDE.md` ni hooks a nivel de proyecto.
 
-This example loads both user-level and project-level settings by setting `settingSources` to `["user", "project"]`:
+Este ejemplo carga tanto la configuración a nivel de usuario como la de proyecto estableciendo `settingSources` en `["user", "project"]`:
 
 **Python**
 ```python
@@ -63,45 +63,45 @@ for await (const message of query({
 }
 ```
 
-Each source loads settings from a specific location, where `<cwd>` is the working directory you pass via the `cwd` option (or the process's current directory if unset). For the full type definition, see [`SettingSource`](/docs/en/agent-sdk/typescript#setting-source) (TypeScript) or [`SettingSource`](/docs/en/agent-sdk/python#setting-source) (Python).
+Cada fuente carga la configuración desde una ubicación específica, donde `<cwd>` es el directorio de trabajo que pasas mediante la opción `cwd` (o el directorio actual del proceso si no se especifica). Consulta la referencia del SDK de TypeScript o Python para la definición completa del tipo `SettingSource`.
 
-| Source | What it loads | Location |
-|:-------|:-------------|:---------|
-| `"project"` | Project CLAUDE.md, `.claude/rules/*.md`, project skills, project hooks, project `settings.json` | `<cwd>/.claude/` and each parent directory up to the filesystem root (stopping when a `.claude/` is found or no more parents exist) |
-| `"user"` | User CLAUDE.md, `~/.claude/rules/*.md`, user skills, user settings | `~/.claude/` |
-| `"local"` | CLAUDE.local.md (gitignored), `.claude/settings.local.json` | `<cwd>/` |
+| Fuente | Qué carga | Ubicación |
+|:-------|:----------|:----------|
+| `"project"` | CLAUDE.md de proyecto, `.claude/rules/*.md`, skills de proyecto, hooks de proyecto, `settings.json` de proyecto | `<cwd>/.claude/` y cada directorio padre hasta la raíz del sistema de archivos (deteniéndose cuando se encuentra un `.claude/` o no existen más padres) |
+| `"user"` | CLAUDE.md de usuario, `~/.claude/rules/*.md`, skills de usuario, configuración de usuario | `~/.claude/` |
+| `"local"` | CLAUDE.local.md (en gitignore), `.claude/settings.local.json` | `<cwd>/` |
 
-To match the full Claude Code CLI behavior, use `["user", "project", "local"]`.
+Para replicar el comportamiento completo del CLI de Claude Code, usa `["user", "project", "local"]`.
 
-> **Advertencia:** The `cwd` option determines where the SDK looks for project settings. If neither `cwd` nor any of its parent directories contains a `.claude/` folder, project-level features won't load. Auto memory (the `~/.claude/projects//memory/` directory that Claude Code uses to persist notes across interactive sessions) is a CLI-only feature and is never loaded by the SDK.
+> **Advertencia:** La opción `cwd` determina dónde busca el SDK la configuración del proyecto. Si ni `cwd` ni ninguno de sus directorios padre contiene una carpeta `.claude/`, las funcionalidades a nivel de proyecto no se cargarán. La memoria automática (el directorio `~/.claude/projects//memory/` que usa Claude Code para persistir notas entre sesiones interactivas) es una funcionalidad exclusiva del CLI y el SDK nunca la carga.
 
-## Project instructions (CLAUDE.md and rules)
+## Instrucciones de proyecto (CLAUDE.md y reglas)
 
-`CLAUDE.md` files and `.claude/rules/*.md` files give your agent persistent context about your project: coding conventions, build commands, architecture decisions, and instructions. When `settingSources` includes `"project"` (as in the example above), the SDK loads these files into context at session start. The agent then follows your project conventions without you repeating them in every prompt.
+Los archivos `CLAUDE.md` y `.claude/rules/*.md` le proporcionan a tu agente contexto persistente sobre tu proyecto: convenciones de código, comandos de compilación, decisiones de arquitectura e instrucciones. Cuando `settingSources` incluye `"project"` (como en el ejemplo anterior), el SDK carga estos archivos en el contexto al inicio de la sesión. El agente entonces sigue las convenciones de tu proyecto sin que tengas que repetirlas en cada prompt.
 
-### CLAUDE.md load locations
+### Ubicaciones de carga de CLAUDE.md
 
-| Level | Location | When loaded |
-|:------|:---------|:------------|
-| Project (root) | `<cwd>/CLAUDE.md` or `<cwd>/.claude/CLAUDE.md` | `settingSources` includes `"project"` |
-| Project rules | `<cwd>/.claude/rules/*.md` | `settingSources` includes `"project"` |
-| Project (parent dirs) | `CLAUDE.md` files in directories above `cwd` | `settingSources` includes `"project"`, loaded at session start |
-| Project (child dirs) | `CLAUDE.md` files in subdirectories of `cwd` | `settingSources` includes `"project"`, loaded on demand when the agent reads a file in that subtree |
-| Local (gitignored) | `<cwd>/CLAUDE.local.md` | `settingSources` includes `"local"` |
-| User | `~/.claude/CLAUDE.md` | `settingSources` includes `"user"` |
-| User rules | `~/.claude/rules/*.md` | `settingSources` includes `"user"` |
+| Nivel | Ubicación | Cuándo se carga |
+|:------|:---------|:----------------|
+| Proyecto (raíz) | `<cwd>/CLAUDE.md` o `<cwd>/.claude/CLAUDE.md` | `settingSources` incluye `"project"` |
+| Reglas de proyecto | `<cwd>/.claude/rules/*.md` | `settingSources` incluye `"project"` |
+| Proyecto (directorios padre) | Archivos `CLAUDE.md` en directorios por encima de `cwd` | `settingSources` incluye `"project"`, se cargan al inicio de la sesión |
+| Proyecto (directorios hijo) | Archivos `CLAUDE.md` en subdirectorios de `cwd` | `settingSources` incluye `"project"`, se cargan bajo demanda cuando el agente lee un archivo en ese subárbol |
+| Local (en gitignore) | `<cwd>/CLAUDE.local.md` | `settingSources` incluye `"local"` |
+| Usuario | `~/.claude/CLAUDE.md` | `settingSources` incluye `"user"` |
+| Reglas de usuario | `~/.claude/rules/*.md` | `settingSources` incluye `"user"` |
 
-All levels are additive: if both project and user CLAUDE.md files exist, the agent sees both. There is no hard precedence rule between levels; if instructions conflict, the outcome depends on how Claude interprets them. Write non-conflicting rules, or state precedence explicitly in the more specific file ("These project instructions override any conflicting user-level defaults").
+Todos los niveles son aditivos: si existen tanto archivos CLAUDE.md de proyecto como de usuario, el agente ve ambos. No hay una regla estricta de precedencia entre niveles; si las instrucciones entran en conflicto, el resultado depende de cómo las interprete Claude. Escribe reglas que no entren en conflicto o establece la precedencia explícitamente en el archivo más específico ("Estas instrucciones de proyecto anulan cualquier valor predeterminado a nivel de usuario que entre en conflicto").
 
-> **Tip:** You can also inject context directly via `systemPrompt` without using CLAUDE.md files. See [Modify system prompts](/docs/en/agent-sdk/modifying-system-prompts). Use CLAUDE.md when you want the same context shared between interactive Claude Code sessions and your SDK agents.
+> **Tip:** También puedes inyectar contexto directamente mediante `systemPrompt` sin usar archivos CLAUDE.md. Consulta [Modify system prompts](../Guides/Modifying%20system%20prompts.md). Usa CLAUDE.md cuando quieras que el mismo contexto se comparta entre las sesiones interactivas de Claude Code y tus agentes del SDK.
 
-For how to structure and organize CLAUDE.md content, see [Manage Claude's memory](https://code.claude.com/docs/en/memory).
+Para saber cómo estructurar y organizar el contenido de CLAUDE.md, consulta [Manage Claude's memory](https://code.claude.com/docs/en/memory).
 
 ## Skills
 
-Skills are markdown files that give your agent specialized knowledge and invocable workflows. Unlike `CLAUDE.md` (which loads every session), skills load on demand. The agent receives skill descriptions at startup and loads the full content when relevant.
+Las skills son archivos markdown que le proporcionan a tu agente conocimiento especializado y flujos de trabajo invocables. A diferencia de `CLAUDE.md` (que se carga en cada sesión), las skills se cargan bajo demanda. El agente recibe las descripciones de las skills al inicio y carga el contenido completo cuando es relevante.
 
-To use skills in the SDK, set `settingSources` so the agent discovers skill files from the filesystem. The `Skill` tool is enabled by default when you don't specify `allowedTools`. If you are using an `allowedTools` allowlist, include `"Skill"` explicitly.
+Para usar skills en el SDK, configura `settingSources` para que el agente descubra los archivos de skills desde el sistema de archivos. La herramienta `Skill` está habilitada por defecto cuando no especificas `allowedTools`. Si estás usando una lista de permisos en `allowedTools`, incluye `"Skill"` explícitamente.
 
 **Python**
 ```python
@@ -139,20 +139,20 @@ for await (const message of query({
 }
 ```
 
-> **Nota:** Skills must be created as filesystem artifacts (`.claude/skills/<name>/SKILL.md`). The SDK does not have a programmatic API for registering skills. See [Agent Skills in the SDK](/docs/en/agent-sdk/skills) for full details.
+> **Nota:** Las skills deben crearse como artefactos del sistema de archivos (`.claude/skills/<name>/SKILL.md`). El SDK no tiene una API programática para registrar skills. Consulta [Agent Skills in the SDK](../Guides/Agent%20Skills%20in%20the%20SDK.md) para más detalles.
 
-For more on creating and using skills, see [Agent Skills in the SDK](/docs/en/agent-sdk/skills).
+Para más información sobre cómo crear y usar skills, consulta [Agent Skills in the SDK](../Guides/Agent%20Skills%20in%20the%20SDK.md).
 
 ## Hooks
 
-The SDK supports two ways to define hooks, and they run side by side:
+El SDK soporta dos formas de definir hooks, y se ejecutan en paralelo:
 
-- **Filesystem hooks:** shell commands defined in `settings.json`, loaded when `settingSources` includes the relevant source. These are the same hooks you'd configure for [interactive Claude Code sessions](https://code.claude.com/docs/en/hooks-guide).
-- **Programmatic hooks:** callback functions passed directly to `query()`. These run in your application process and can return structured decisions. See [Control execution with hooks](/docs/en/agent-sdk/hooks).
+- **Hooks del sistema de archivos:** comandos de shell definidos en `settings.json`, cargados cuando `settingSources` incluye la fuente correspondiente. Son los mismos hooks que configurarías para [sesiones interactivas de Claude Code](https://code.claude.com/docs/en/hooks-guide).
+- **Hooks programáticos:** funciones de callback pasadas directamente a `query()`. Se ejecutan en el proceso de tu aplicación y pueden devolver decisiones estructuradas. Consulta [Control execution with hooks](../Guides/Intercept%20and%20control%20agent%20behavior%20with%20hooks.md).
 
-Both types execute during the same hook lifecycle. If you already have hooks in your project's `.claude/settings.json` and you set `settingSources: ["project"]`, those hooks run automatically in the SDK with no extra configuration.
+Ambos tipos se ejecutan durante el mismo ciclo de vida de hooks. Si ya tienes hooks en el `.claude/settings.json` de tu proyecto y configuras `settingSources: ["project"]`, esos hooks se ejecutarán automáticamente en el SDK sin configuración adicional.
 
-Hook callbacks receive the tool input and return a decision dict. Returning `{}` (an empty dict) means allow the tool to proceed. Returning `{"decision": "block", "reason": "..."}` prevents execution and the reason is sent to Claude as the tool result. See the [hooks guide](/docs/en/agent-sdk/hooks) for the full callback signature and return types.
+Los callbacks de hooks reciben la entrada de la herramienta y devuelven un dict de decisión. Devolver `{}` (un dict vacío) significa permitir que la herramienta continúe. Devolver `{"decision": "block", "reason": "..."}` impide la ejecución y el motivo se envía a Claude como resultado de la herramienta. Consulta la [guía de hooks](../Guides/Intercept%20and%20control%20agent%20behavior%20with%20hooks.md) para conocer la firma completa del callback y los tipos de retorno.
 
 **Python**
 ```python
@@ -220,40 +220,40 @@ for await (const message of query({
 }
 ```
 
-### When to use which hook type
+### Cuándo usar cada tipo de hook
 
-| Hook type | Best for |
-|:----------|:---------|
-| **Filesystem** (`settings.json`) | Sharing hooks between CLI and SDK sessions. Supports `"command"` (shell scripts), `"http"` (POST to an endpoint), `"prompt"` (LLM evaluates a prompt), and `"agent"` (spawns a verifier agent). These fire in the main agent and any subagents it spawns. |
-| **Programmatic** (callbacks in `query()`) | Application-specific logic; returning structured decisions; in-process integration. Scoped to the main session only. |
+| Tipo de hook | Mejor para |
+|:-------------|:-----------|
+| **Del sistema de archivos** (`settings.json`) | Compartir hooks entre sesiones del CLI y del SDK. Soporta `"command"` (scripts de shell), `"http"` (POST a un endpoint), `"prompt"` (un LLM evalúa un prompt) y `"agent"` (lanza un agente verificador). Se disparan en el agente principal y en cualquier subagente que este lance. |
+| **Programáticos** (callbacks en `query()`) | Lógica específica de la aplicación; devolver decisiones estructuradas; integración en el mismo proceso. Limitados a la sesión principal únicamente. |
 
-> **Nota:** The TypeScript SDK supports additional hook events beyond Python, including `SessionStart`, `SessionEnd`, `TeammateIdle`, and `TaskCompleted`. See the [hooks guide](/docs/en/agent-sdk/hooks) for the full event compatibility table.
+> **Nota:** El SDK de TypeScript soporta eventos de hook adicionales más allá de Python, incluyendo `SessionStart`, `SessionEnd`, `TeammateIdle` y `TaskCompleted`. Consulta la [guía de hooks](../Guides/Intercept%20and%20control%20agent%20behavior%20with%20hooks.md) para la tabla completa de compatibilidad de eventos.
 
-For full details on programmatic hooks, see [Control execution with hooks](/docs/en/agent-sdk/hooks). For filesystem hook syntax, see [Hooks](https://code.claude.com/docs/en/hooks).
+Para más detalles sobre hooks programáticos, consulta [Control execution with hooks](../Guides/Intercept%20and%20control%20agent%20behavior%20with%20hooks.md). Para la sintaxis de hooks del sistema de archivos, consulta [Hooks](https://code.claude.com/docs/en/hooks).
 
-## Choose the right feature
+## Elegir la funcionalidad adecuada
 
-The Agent SDK gives you access to several ways to extend your agent's behavior. If you're unsure which to use, this table maps common goals to the right approach.
+El Agent SDK te da acceso a varias formas de extender el comportamiento de tu agente. Si no estás seguro de cuál usar, esta tabla relaciona los objetivos comunes con el enfoque correcto.
 
-| You want to... | Use | SDK surface |
-|:----------------|:----|:------------|
-| Set project conventions your agent always follows | [CLAUDE.md](https://code.claude.com/docs/en/memory) | `settingSources: ["project"]` loads it automatically |
-| Give the agent reference material it loads when relevant | [Skills](/docs/en/agent-sdk/skills) | `settingSources` + `allowedTools: ["Skill"]` |
-| Run a reusable workflow (deploy, review, release) | [User-invocable skills](/docs/en/agent-sdk/skills) | `settingSources` + `allowedTools: ["Skill"]` |
-| Delegate an isolated subtask to a fresh context (research, review) | [Subagents](/docs/en/agent-sdk/subagents) | `agents` parameter + `allowedTools: ["Agent"]` |
-| Coordinate multiple Claude Code instances with shared task lists and direct inter-agent messaging | [Agent teams](https://code.claude.com/docs/en/agent-teams) | Not directly configured via SDK options. Agent teams are a CLI feature where one session acts as the team lead, coordinating work across independent teammates |
-| Run deterministic logic on tool calls (audit, block, transform) | [Hooks](/docs/en/agent-sdk/hooks) | `hooks` parameter with callbacks, or shell scripts loaded via `settingSources` |
-| Give Claude structured tool access to an external service | [MCP](/docs/en/agent-sdk/mcp) | `mcpServers` parameter |
+| Quieres... | Usa | Superficie del SDK |
+|:-----------|:----|:-------------------|
+| Establecer convenciones de proyecto que tu agente siempre siga | [CLAUDE.md](https://code.claude.com/docs/en/memory) | `settingSources: ["project"]` lo carga automáticamente |
+| Darle al agente material de referencia que carga cuando es relevante | [Skills](../Guides/Agent%20Skills%20in%20the%20SDK.md) | `settingSources` + `allowedTools: ["Skill"]` |
+| Ejecutar un flujo de trabajo reutilizable (despliegue, revisión, release) | [Skills invocables por el usuario](../Guides/Agent%20Skills%20in%20the%20SDK.md) | `settingSources` + `allowedTools: ["Skill"]` |
+| Delegar una subtarea aislada a un contexto nuevo (investigación, revisión) | [Subagentes](../Guides/Subagents%20in%20the%20SDK.md) | parámetro `agents` + `allowedTools: ["Agent"]` |
+| Coordinar múltiples instancias de Claude Code con listas de tareas compartidas y mensajería directa entre agentes | [Agent teams](https://code.claude.com/docs/en/agent-teams) | No se configura directamente mediante opciones del SDK. Los agent teams son una funcionalidad del CLI donde una sesión actúa como líder del equipo, coordinando el trabajo entre compañeros independientes |
+| Ejecutar lógica determinista en llamadas a herramientas (auditoría, bloqueo, transformación) | [Hooks](../Guides/Intercept%20and%20control%20agent%20behavior%20with%20hooks.md) | parámetro `hooks` con callbacks, o scripts de shell cargados mediante `settingSources` |
+| Darle a Claude acceso estructurado a herramientas de un servicio externo | [MCP](../Guides/Connect%20to%20external%20tools%20with%20MCP.md) | parámetro `mcpServers` |
 
-> **Tip:** **Subagents versus agent teams:** Subagents are ephemeral and isolated: fresh conversation, one task, summary returned to parent. Agent teams coordinate multiple independent Claude Code instances that share a task list and message each other directly. Agent teams are a CLI feature. See [What subagents inherit](/docs/en/agent-sdk/subagents#what-subagents-inherit) and the [agent teams comparison](https://code.claude.com/docs/en/agent-teams#compare-with-subagents) for details.
+> **Tip:** **Subagentes versus agent teams:** Los subagentes son efímeros y aislados: conversación nueva, una tarea, resumen devuelto al padre. Los agent teams coordinan múltiples instancias independientes de Claude Code que comparten una lista de tareas y se envían mensajes directamente entre sí. Los agent teams son una funcionalidad del CLI. Consulta [What subagents inherit](../Guides/Subagents%20in%20the%20SDK.md#what-subagents-inherit) y la [comparación con agent teams](https://code.claude.com/docs/en/agent-teams#compare-with-subagents) para más detalles.
 
-Every feature you enable adds to your agent's context window. For per-feature costs and how these features layer together, see [Extend Claude Code](https://code.claude.com/docs/en/features-overview#understand-context-costs).
+Cada funcionalidad que habilitas se añade a la ventana de contexto de tu agente. Para conocer los costos por funcionalidad y cómo estas se combinan entre sí, consulta [Extend Claude Code](https://code.claude.com/docs/en/features-overview#understand-context-costs).
 
-## Related resources
+## Recursos relacionados
 
-- [Extend Claude Code](https://code.claude.com/docs/en/features-overview): Conceptual overview of all extension features, with comparison tables and context cost analysis
-- [Skills in the SDK](/docs/en/agent-sdk/skills): Full guide to using skills programmatically
-- [Subagents](/docs/en/agent-sdk/subagents): Define and invoke subagents for isolated subtasks
-- [Hooks](/docs/en/agent-sdk/hooks): Intercept and control agent behavior at key execution points
-- [Permissions](/docs/en/agent-sdk/permissions): Control tool access with modes, rules, and callbacks
-- [System prompts](/docs/en/agent-sdk/modifying-system-prompts): Inject context without CLAUDE.md files
+- [Extend Claude Code](https://code.claude.com/docs/en/features-overview): Visión conceptual de todas las funcionalidades de extensión, con tablas comparativas y análisis de costos de contexto
+- [Skills in the SDK](../Guides/Agent%20Skills%20in%20the%20SDK.md): Guía completa para usar skills de forma programática
+- [Subagents](../Guides/Subagents%20in%20the%20SDK.md): Define e invoca subagentes para subtareas aisladas
+- [Hooks](../Guides/Intercept%20and%20control%20agent%20behavior%20with%20hooks.md): Intercepta y controla el comportamiento del agente en puntos clave de ejecución
+- [Permissions](../Guides/Configure%20permissions.md): Controla el acceso a herramientas con modos, reglas y callbacks
+- [System prompts](../Guides/Modifying%20system%20prompts.md): Inyecta contexto sin usar archivos CLAUDE.md

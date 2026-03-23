@@ -1,128 +1,128 @@
 # Hosting the Agent SDK
 
-Deploy and host Claude Agent SDK in production environments
+Despliega y aloja el Claude Agent SDK en entornos de producción
 
 ---
 
-The Claude Agent SDK differs from traditional stateless LLM APIs in that it maintains conversational state and executes commands in a persistent environment. This guide covers the architecture, hosting considerations, and best practices for deploying SDK-based agents in production.
+El Claude Agent SDK se diferencia de las APIs de LLM tradicionales sin estado en que mantiene el estado conversacional y ejecuta comandos en un entorno persistente. Esta guía cubre la arquitectura, las consideraciones de alojamiento y las mejores prácticas para desplegar agentes basados en el SDK en producción.
 
-> **Info:** For security hardening beyond basic sandboxing (including network controls, credential management, and isolation options), see [Secure Deployment](/docs/en/agent-sdk/secure-deployment).
+> **Info:** Para el endurecimiento de seguridad más allá del sandboxing básico (incluyendo controles de red, gestión de credenciales y opciones de aislamiento), consulta [Secure Deployment](./Securely%20deploying%20AI%20agents.md).
 
-## Hosting Requirements
+## Requisitos de Alojamiento
 
-### Container-Based Sandboxing
+### Sandboxing Basado en Contenedores
 
-For security and isolation, the SDK should run inside a sandboxed container environment. This provides process isolation, resource limits, network control, and ephemeral filesystems.
+Por seguridad y aislamiento, el SDK debe ejecutarse dentro de un entorno de contenedor con sandbox. Esto proporciona aislamiento de procesos, límites de recursos, control de red y sistemas de archivos efímeros.
 
-The SDK also supports [programmatic sandbox configuration](/docs/en/agent-sdk/typescript#sandbox-settings) for command execution.
+El SDK también admite configuración programática del sandbox para la ejecución de comandos.
 
-### System Requirements
+### Requisitos del Sistema
 
-Each SDK instance requires:
+Cada instancia del SDK requiere:
 
-- **Runtime dependencies**
-  - Python 3.10+ (for Python SDK) or Node.js 18+ (for TypeScript SDK)
-  - Node.js (required by Claude Code CLI)
+- **Dependencias de tiempo de ejecución**
+  - Python 3.10+ (para el SDK de Python) o Node.js 18+ (para el SDK de TypeScript)
+  - Node.js (requerido por Claude Code CLI)
   - Claude Code CLI: `npm install -g @anthropic-ai/claude-code`
 
-- **Resource allocation**
-  - Recommended: 1GiB RAM, 5GiB of disk, and 1 CPU (vary this based on your task as needed)
+- **Asignación de recursos**
+  - Recomendado: 1GiB de RAM, 5GiB de disco y 1 CPU (ajusta según las necesidades de tu tarea)
 
-- **Network access**
-  - Outbound HTTPS to `api.anthropic.com`
-  - Optional: Access to MCP servers or external tools
+- **Acceso a red**
+  - HTTPS saliente hacia `api.anthropic.com`
+  - Opcional: acceso a servidores MCP o herramientas externas
 
-## Understanding the SDK Architecture
+## Entendiendo la Arquitectura del SDK
 
-Unlike stateless API calls, the Claude Agent SDK operates as a **long-running process** that:
-- **Executes commands** in a persistent shell environment
-- **Manages file operations** within a working directory
-- **Handles tool execution** with context from previous interactions
+A diferencia de las llamadas a API sin estado, el Claude Agent SDK opera como un **proceso de larga duración** que:
+- **Ejecuta comandos** en un entorno de shell persistente
+- **Gestiona operaciones de archivos** dentro de un directorio de trabajo
+- **Maneja la ejecución de herramientas** con contexto de interacciones previas
 
-## Sandbox Provider Options
+## Opciones de Proveedores de Sandbox
 
-Several providers specialize in secure container environments for AI code execution:
+Varios proveedores se especializan en entornos de contenedores seguros para la ejecución de código de IA:
 
-- **[Modal Sandbox](https://modal.com/docs/guide/sandbox)** - [demo implementation](https://modal.com/docs/examples/claude-slack-gif-creator)
+- **[Modal Sandbox](https://modal.com/docs/guide/sandbox)** - [implementación de ejemplo](https://modal.com/docs/examples/claude-slack-gif-creator)
 - **[Cloudflare Sandboxes](https://github.com/cloudflare/sandbox-sdk)**
 - **[Daytona](https://www.daytona.io/)**
 - **[E2B](https://e2b.dev/)**
 - **[Fly Machines](https://fly.io/docs/machines/)**
 - **[Vercel Sandbox](https://vercel.com/docs/functions/sandbox)**
 
-For self-hosted options (Docker, gVisor, Firecracker) and detailed isolation configuration, see [Isolation Technologies](/docs/en/agent-sdk/secure-deployment#isolation-technologies).
+Para opciones auto-alojadas (Docker, gVisor, Firecracker) y configuración detallada de aislamiento, consulta [Isolation Technologies](./Securely%20deploying%20AI%20agents.md#isolation-technologies).
 
-## Production Deployment Patterns
+## Patrones de Despliegue en Producción
 
-### Pattern 1: Ephemeral Sessions
+### Patrón 1: Sesiones Efímeras
 
-Create a new container for each user task, then destroy it when complete.
+Crea un nuevo contenedor para cada tarea del usuario y destrúyelo al completarse.
 
-Best for one-off tasks, the user may still interact with the AI while the task is completing, but once completed the container is destroyed.
+Ideal para tareas puntuales; el usuario puede seguir interactuando con la IA mientras la tarea se completa, pero una vez finalizada el contenedor se destruye.
 
-**Examples:**
-- Bug Investigation & Fix: Debug and resolve a specific issue with relevant context
-- Invoice Processing: Extract and structure data from receipts/invoices for accounting systems
-- Translation Tasks: Translate documents or content batches between languages
-- Image/Video Processing: Apply transformations, optimizations, or extract metadata from media files
+**Ejemplos:**
+- Investigación y corrección de errores: depurar y resolver un problema específico con el contexto relevante
+- Procesamiento de facturas: extraer y estructurar datos de recibos/facturas para sistemas contables
+- Tareas de traducción: traducir documentos o lotes de contenido entre idiomas
+- Procesamiento de imágenes/video: aplicar transformaciones, optimizaciones o extraer metadatos de archivos multimedia
 
-### Pattern 2: Long-Running Sessions
+### Patrón 2: Sesiones de Larga Duración
 
-Maintain persistent container instances for long running tasks. Often times running _multiple_ Claude Agent processes inside of the container based on demand.
+Mantén instancias de contenedores persistentes para tareas de larga duración. A menudo se ejecutan _múltiples_ procesos de Claude Agent dentro del contenedor según la demanda.
 
-Best for proactive agents that take action without the users input, agents that serve content or agents that process high amounts of messages.
+Ideal para agentes proactivos que toman acción sin la intervención del usuario, agentes que sirven contenido o agentes que procesan grandes volúmenes de mensajes.
 
-**Examples:**
-- Email Agent: Monitors incoming emails and autonomously triages, responds, or takes actions based on content
-- Site Builder: Hosts custom websites per user with live editing capabilities served through container ports
-- High-Frequency Chat Bots: Handles continuous message streams from platforms like Slack where rapid response times are critical
+**Ejemplos:**
+- Agente de correo electrónico: monitorea correos entrantes y de forma autónoma los clasifica, responde o toma acciones según el contenido
+- Constructor de sitios: aloja sitios web personalizados por usuario con capacidades de edición en vivo servidas a través de puertos del contenedor
+- Chatbots de alta frecuencia: maneja flujos de mensajes continuos desde plataformas como Slack donde los tiempos de respuesta rápidos son críticos
 
-### Pattern 3: Hybrid Sessions
+### Patrón 3: Sesiones Híbridas
 
-Ephemeral containers that are hydrated with history and state, possibly from a database or from the SDK's session resumption features.
+Contenedores efímeros que se hidratan con historial y estado, posiblemente desde una base de datos o desde las funciones de reanudación de sesión del SDK.
 
-Best for containers with intermittent interaction from the user that kicks off work and spins down when the work is completed but can be continued.
+Ideal para contenedores con interacción intermitente del usuario que inicia el trabajo y se detiene al completarse, pero puede reanudarse.
 
-**Examples:**
-- Personal Project Manager: Helps manage ongoing projects with intermittent check-ins, maintains context of tasks, decisions, and progress
-- Deep Research: Conducts multi-hour research tasks, saves findings and resumes investigation when user returns
-- Customer Support Agent: Handles support tickets that span multiple interactions, loads ticket history and customer context
+**Ejemplos:**
+- Gestor de proyectos personal: ayuda a gestionar proyectos en curso con revisiones intermitentes, mantiene el contexto de tareas, decisiones y progreso
+- Investigación profunda: realiza tareas de investigación de varias horas, guarda los hallazgos y reanuda la investigación cuando el usuario regresa
+- Agente de soporte al cliente: maneja tickets de soporte que abarcan múltiples interacciones, carga el historial del ticket y el contexto del cliente
 
-### Pattern 4: Single Containers
+### Patrón 4: Contenedores Únicos
 
-Run multiple Claude Agent SDK processes in one global container.
+Ejecuta múltiples procesos del Claude Agent SDK en un único contenedor global.
 
-Best for agents that must collaborate closely together. This is likely the least popular pattern because you will have to prevent agents from overwriting each other.
+Ideal para agentes que deben colaborar estrechamente entre sí. Este es probablemente el patrón menos popular, ya que tendrás que evitar que los agentes se sobreescriban entre sí.
 
-**Examples:**
-- **Simulations**: Agents that interact with each other in simulations such as video games.
+**Ejemplos:**
+- **Simulaciones**: agentes que interactúan entre sí en simulaciones como videojuegos.
 
-## FAQ
+## Preguntas Frecuentes
 
-### How do I communicate with my sandboxes?
-When hosting in containers, expose ports to communicate with your SDK instances. Your application can expose HTTP/WebSocket endpoints for external clients while the SDK runs internally within the container.
+### ¿Cómo me comunico con mis sandboxes?
+Al alojar en contenedores, expone puertos para comunicarte con tus instancias del SDK. Tu aplicación puede exponer endpoints HTTP/WebSocket para clientes externos mientras el SDK se ejecuta internamente dentro del contenedor.
 
-### What is the cost of hosting a container?
-The dominant cost of serving agents is the tokens; containers vary based on what you provision, but a minimum cost is roughly 5 cents per hour running.
+### ¿Cuál es el costo de alojar un contenedor?
+El costo dominante de servir agentes son los tokens; los contenedores varían según lo que aprovisiones, pero el costo mínimo es de aproximadamente 5 centavos por hora en ejecución.
 
-### When should I shut down idle containers vs. keeping them warm?
-This is likely provider dependent, different sandbox providers will let you set different criteria for idle timeouts after which a sandbox might spin down.
-You will want to tune this timeout based on how frequent you think user response might be.
+### ¿Cuándo debo apagar los contenedores inactivos vs. mantenerlos activos?
+Esto probablemente depende del proveedor; diferentes proveedores de sandbox te permiten establecer distintos criterios de tiempo de espera por inactividad tras los cuales un sandbox puede detenerse.
+Deberás ajustar este tiempo de espera en función de la frecuencia con que esperas que el usuario responda.
 
-### How often should I update the Claude Code CLI?
-The Claude Code CLI is versioned with semver, so any breaking changes will be versioned.
+### ¿Con qué frecuencia debo actualizar el Claude Code CLI?
+El Claude Code CLI usa versionado semver, por lo que cualquier cambio que rompa la compatibilidad estará versionado.
 
-### How do I monitor container health and agent performance?
-Since containers are just servers the same logging infrastructure you use for the backend will work for containers.
+### ¿Cómo monitoreo la salud del contenedor y el rendimiento del agente?
+Dado que los contenedores son simplemente servidores, la misma infraestructura de logging que usas para el backend funcionará para los contenedores.
 
-### How long can an agent session run before timing out?
-An agent session will not timeout, but consider setting a 'maxTurns' property to prevent Claude from getting stuck in a loop.
+### ¿Cuánto tiempo puede ejecutarse una sesión de agente antes de que expire?
+Una sesión de agente no expirará, pero considera establecer una propiedad `maxTurns` para evitar que Claude quede atrapado en un bucle.
 
-## Next Steps
+## Próximos Pasos
 
-- [Secure Deployment](/docs/en/agent-sdk/secure-deployment) - Network controls, credential management, and isolation hardening
-- [TypeScript SDK - Sandbox Settings](/docs/en/agent-sdk/typescript#sandbox-settings) - Configure sandbox programmatically
-- [Sessions Guide](/docs/en/agent-sdk/sessions) - Learn about session management
-- [Permissions](/docs/en/agent-sdk/permissions) - Configure tool permissions
-- [Cost Tracking](/docs/en/agent-sdk/cost-tracking) - Monitor API usage
-- [MCP Integration](/docs/en/agent-sdk/mcp) - Extend with custom tools
+- [Secure Deployment](./Securely%20deploying%20AI%20agents.md) - Controles de red, gestión de credenciales y endurecimiento del aislamiento
+- TypeScript SDK - Sandbox Settings - Configurar el sandbox de forma programática
+- [Sessions Guide](../Core%20concepts/Work%20with%20sessions.md) - Aprende sobre la gestión de sesiones
+- [Permissions](./Configure%20permissions.md) - Configura los permisos de herramientas
+- [Cost Tracking](./Track%20cost%20and%20usage.md) - Monitorea el uso de la API
+- [MCP Integration](./Connect%20to%20external%20tools%20with%20MCP.md) - Extiende con herramientas personalizadas
